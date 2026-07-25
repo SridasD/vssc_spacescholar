@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" width="480" height="320" role="img" aria-label="Searching documents">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ec4899"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+    <clipPath id="paper"><rect x="250" y="70" width="180" height="230" rx="14"/></clipPath>
+    <style>
+      .person { animation: bob 3s ease-in-out infinite; }
+      @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+      .glass { animation: scan 3s ease-in-out infinite; }
+      @keyframes scan {
+        0%   { transform: translate(352px,128px); }
+        25%  { transform: translate(366px,168px); }
+        50%  { transform: translate(348px,232px); }
+        75%  { transform: translate(364px,196px); }
+        100% { transform: translate(352px,128px); }
+      }
+      .beam { animation: beam 2.4s linear infinite; }
+      @keyframes beam { 0% { transform: translateY(0); } 100% { transform: translateY(206px); } }
+      .hit  { animation: hit 1.8s ease-in-out infinite; }
+      .hit2 { animation-delay: .9s; }
+      @keyframes hit { 0%,100% { fill:#e2e8f0; } 50% { fill:#f9a8d4; } }
+      .glint { animation: glint 3s ease-in-out infinite; }
+      @keyframes glint { 0%,100% { opacity:.85; } 50% { opacity:.35; } }
+    </style>
+  </defs>
+
+  <!-- ===== person ===== -->
+  <g class="person">
+    <rect x="92" y="178" width="64" height="127" rx="24" fill="#6366f1"/>
+    <line x1="150" y1="205" x2="232" y2="196" stroke="#4f52d3" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="232" cy="196" r="11" fill="#f2c9a6"/>
+    <rect x="112" y="168" width="16" height="18" fill="#f2c9a6"/>
+    <circle cx="120" cy="148" r="30" fill="#f2c9a6"/>
+    <path d="M90 148 A30 30 0 0 1 150 148 Z" fill="#2f2a2e"/>
+    <rect x="90" y="140" width="8" height="16" rx="3" fill="#2f2a2e"/>
+    <circle cx="129" cy="150" r="3" fill="#3b3540"/>
+    <circle cx="141" cy="150" r="3" fill="#3b3540"/>
+    <path d="M127 159 Q133 165 140 159" fill="none" stroke="#b97f7f" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== document ===== -->
+  <rect x="252" y="74" width="180" height="230" rx="14" fill="#000000" opacity="0.06"/>
+  <rect x="250" y="70" width="180" height="230" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="272" y="90"  width="88"  height="10" rx="4" fill="#94a3b8"/>
+  <rect x="272" y="120" width="150" height="8" rx="3" fill="#e2e8f0"/>
+  <rect x="272" y="140" width="140" height="8" rx="3" fill="#e2e8f0"/>
+  <rect class="hit" x="272" y="160" width="150" height="8" rx="3" fill="#e2e8f0"/>
+  <rect x="272" y="180" width="120" height="8" rx="3" fill="#e2e8f0"/>
+  <rect class="hit hit2" x="272" y="200" width="148" height="8" rx="3" fill="#e2e8f0"/>
+  <rect x="272" y="220" width="110" height="8" rx="3" fill="#e2e8f0"/>
+  <rect x="272" y="240" width="140" height="8" rx="3" fill="#e2e8f0"/>
+
+  <!-- scan beam (clipped to the paper) -->
+  <g clip-path="url(#paper)">
+    <rect class="beam" x="250" y="70" width="180" height="12" fill="#3b82f6" opacity="0.16"/>
+  </g>
+
+  <!-- ===== magnifying glass (scans the page) ===== -->
+  <g class="glass" transform="translate(352 128)">
+    <circle r="30" fill="#bfdbfe" fill-opacity="0.45"/>
+    <circle r="30" fill="none" stroke="url(#ring)" stroke-width="8"/>
+    <path class="glint" d="M-16 -6 A16 16 0 0 1 -6 -16" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+    <line x1="-21" y1="21" x2="-40" y2="40" stroke="url(#ring)" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>
