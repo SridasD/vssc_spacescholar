@@ -37,7 +37,7 @@ const INTELLIDOC_MD_CSS = `
 .intellidoc-md ol{list-style:decimal;}
 .intellidoc-md li{margin:3px 0;}
 .intellidoc-md li::marker{color:#7c3aed;}
-.intellidoc-md code{font-size:.9em;background:rgba(124,58,237,.08);padding:.1em .35em;border-radius:4px;}
+.intellidoc-md code{font-size:.9em;background:rgba(7,158,210,.08);padding:.1em .35em;border-radius:4px;}
 .intellidoc-md a{color:inherit;text-decoration:underline;}
 .intellidoc-md blockquote{border-left:3px solid #ddd6fe;padding-left:12px;margin:6px 0;}
 `;
@@ -370,14 +370,14 @@ export default function Chatbot({
         >
             {/* Violet color rail — matches IntelliDoc button identity */}
             <div
-                className="absolute left-0 top-0 bottom-0 w-[3px] bg-violet-500"
+                className="absolute left-0 top-0 bottom-0 w-[3px] bg-sky-500"
                 aria-hidden
             />
 
             {/* ============ HEADER ============ */}
             <div
                 className="flex items-center justify-between px-5 py-4
-                           bg-gradient-to-b from-violet-50/70 to-transparent
+                           bg-gradient-to-b from-sky-50/70 to-transparent
                            border-b border-slate-200 flex-shrink-0"
                 onMouseDown={handleMouseDown}
             >
@@ -387,8 +387,8 @@ export default function Chatbot({
                     <div className="min-w-0 flex-1">
                         {/* Micro-label */}
                         <div className="flex items-center gap-1.5">
-                            <Sparkles className="h-3 w-3 text-violet-600" />
-                            <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-violet-700">
+                            <Sparkles className="h-3 w-3 text-sky-600" />
+                            <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-sky-700">
                                 IntelliDoc
                             </span>
                         </div>
@@ -435,8 +435,8 @@ export default function Chatbot({
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={toggleSize}
-                                    className="cursor-pointer p-1.5 hover:bg-violet-100 rounded-md
-                                               text-slate-500 hover:text-violet-700 transition-colors"
+                                    className="cursor-pointer p-1.5 hover:bg-sky-100 rounded-md
+                                               text-slate-500 hover:text-sky-700 transition-colors"
                                 >
                                     {size === "normal" ? (
                                         <Maximize2 className="h-3.5 w-3.5" />
@@ -469,6 +469,12 @@ export default function Chatbot({
                 </div>
             </div>
 
+            {/* ============ DISCLAIMER ============ */}
+            <div className="px-5 py-2 text-[11px] leading-snug text-amber-800 bg-amber-50 border-b border-amber-200">
+                This is an AI-generated summary for quick understanding, it may not include every
+                detail. Please refer to the original document for complete information.
+            </div>
+
             {/* ============ MESSAGES ============ */}
             <div
                 className={`overflow-y-auto px-5 py-4 ${sizeConfig[size].scrollHeight} bg-slate-50/30 flex-1`}
@@ -477,8 +483,8 @@ export default function Chatbot({
                 <div className="space-y-3">
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center text-center h-full min-h-[280px] px-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center mb-3">
-                                <Sparkles className="h-5 w-5 text-violet-600" />
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-100 to-orange-100 flex items-center justify-center mb-3">
+                                <Sparkles className="h-5 w-5 text-sky-600" />
                             </div>
                             <span className="text-[10px] tracking-[0.12em] uppercase text-slate-400 mb-2">
                                 Ready to assist
@@ -511,13 +517,13 @@ export default function Chatbot({
                                         {isUser ? (
                                             <User className="h-3 w-3 text-slate-400" />
                                         ) : (
-                                            <Sparkles className="h-3 w-3 text-violet-600" />
+                                            <Sparkles className="h-3 w-3 text-sky-600" />
                                         )}
                                         <span
                                             className={`text-[10px] font-bold tracking-[0.1em] uppercase ${
                                                 isUser
                                                     ? "text-slate-400"
-                                                    : "text-violet-700"
+                                                    : "text-sky-700"
                                             }`}
                                         >
                                             {isUser ? "You" : "IntelliDoc"}
@@ -528,7 +534,7 @@ export default function Chatbot({
                                     <div
                                         className={`rounded-2xl px-4 py-3 ${
                                             isUser
-                                                ? "bg-violet-600 text-white rounded-tr-sm shadow-[0_4px_12px_-4px_rgba(124,58,237,0.35)]"
+                                                ? "bg-sky-600 text-white rounded-tr-sm shadow-[0_4px_12px_-4px_rgba(7,158,210,0.35)]"
                                                 : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-[0_1px_0_rgba(13,20,36,0.02)]"
                                         }`}
                                     >
@@ -563,13 +569,13 @@ export default function Chatbot({
 
                     {isLoading && (
                         <div className="flex justify-start">
-                            <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 border border-violet-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                            <div className="flex items-center gap-3 bg-gradient-to-r from-sky-50 to-orange-50 border border-sky-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
                                 <div className="flex gap-1.5">
-                                    <span className="w-2.5 h-2.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                    <span className="w-2.5 h-2.5 bg-violet-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                    <span className="w-2.5 h-2.5 bg-violet-500 rounded-full animate-bounce" />
+                                    <span className="w-2.5 h-2.5 bg-sky-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                    <span className="w-2.5 h-2.5 bg-sky-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                    <span className="w-2.5 h-2.5 bg-sky-500 rounded-full animate-bounce" />
                                 </div>
-                                <span className="text-[13px] font-medium text-violet-700">
+                                <span className="text-[13px] font-medium text-sky-700">
                                     IntelliDoc is thinking…
                                 </span>
                             </div>
@@ -582,7 +588,7 @@ export default function Chatbot({
             <div className="px-5 py-3.5 border-t border-slate-200 bg-white flex-shrink-0">
                 <div
                     className="flex gap-2 items-center rounded-xl border border-slate-300 bg-white px-3 py-1.5
-                               focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-100
+                               focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100
                                transition-all duration-200"
                 >
                     <input
@@ -598,9 +604,9 @@ export default function Chatbot({
                         onClick={handleSendMessage}
                         disabled={isLoading || !inputValue.trim()}
                         className="h-8 w-8 p-0 flex items-center justify-center
-                                   bg-gradient-to-br from-violet-600 to-fuchsia-600 text-white
+                                   bg-gradient-to-br from-sky-600 to-orange-600 text-white
                                    rounded-lg
-                                   hover:shadow-[0_4px_12px_-2px_rgba(124,58,237,0.45)]
+                                   hover:shadow-[0_4px_12px_-2px_rgba(7,158,210,0.45)]
                                    disabled:opacity-40 disabled:cursor-not-allowed
                                    disabled:bg-slate-200 disabled:bg-none disabled:text-slate-400
                                    transition-all duration-200"

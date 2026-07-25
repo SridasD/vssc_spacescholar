@@ -725,7 +725,7 @@ export default function DashboardBulk() {
       )}
 
       <motion.h2
-        className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-300 mb-6 w-[90%]"
+        className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-saffron-deep to-peacock-deep mb-6 w-[90%]"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -733,24 +733,23 @@ export default function DashboardBulk() {
         Step 2: Metadata Upload (CSV Only)
       </motion.h2>
 
-      <div className="p-4 mb-4 rounded-xl border border-white/10 bg-white/10 text-blue-100">
+      <div className="p-4 mb-4 rounded-xl border border-peacock/20 bg-peacock-soft text-foreground/80">
         <label className="block mb-2">
-          Category (Content Type) <span className="text-red-300">*</span>
+          Category (Content Type) <span className="text-rose-600">*</span>
         </label>
         <div className="flex gap-3 items-center">
           <select
             value={selectedContentType}
             onChange={(e) => setSelectedContentType(e.target.value)}
-            className="min-w-[260px] p-2 rounded-lg bg-white/20 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="min-w-[260px] p-2 rounded-lg bg-white border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-peacock"
             disabled={anySubmitting || parsing}
           >
-            <option className="bg-gray-900" value="">
+            <option value="">
               Select a category…
             </option>
             {contentTypes.map((ct) => (
               <option
                 key={ct.id}
-                className="bg-gray-900"
                 value={String(ct.id)}
               >
                 {ct.content_type}
@@ -760,16 +759,16 @@ export default function DashboardBulk() {
 
           {selectedContentType && (
             <>
-              <span className="text-xs px-2 py-1 rounded bg-blue-500/30 border border-blue-400/40">
+              <span className="text-xs px-2 py-1 rounded bg-peacock-soft border border-peacock/30 text-peacock-deep">
                 Selected ID: {selectedContentType}
               </span>
-              <span className="text-xs px-2 py-1 rounded bg-green-500/30 border border-green-400/40">
+              <span className="text-xs px-2 py-1 rounded bg-leaf-soft border border-leaf/30 text-leaf">
                 Expected "Document Type": {selectedContentTypeLabel || "—"}
               </span>
             </>
           )}
         </div>
-        <p className="text-xs opacity-80 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           Each CSV must have headers for Accession No, Title, Document Type,
           and Year. You can select up to 5 files at a time, and each file may
           contain at most 1000 rows.
@@ -791,8 +790,8 @@ export default function DashboardBulk() {
           onClick={onPick}
           className={`px-4 py-2 rounded-lg text-white ${
             selectedContentType
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-gray-600 cursor-not-allowed"
+              ? "bg-primary hover:bg-primary/90"
+              : "bg-gray-400 cursor-not-allowed"
           }`}
           disabled={!selectedContentType || anySubmitting || parsing}
           title={
@@ -804,21 +803,21 @@ export default function DashboardBulk() {
         <button
           type="button"
           onClick={clearAll}
-          className="px-4 py-2 rounded-lg bg-white/80 text-gray-800 hover:bg-white disabled:opacity-60"
+          className="px-4 py-2 rounded-lg bg-white border border-border text-foreground hover:bg-muted disabled:opacity-60"
           disabled={anySubmitting || parsing}
         >
           Clear All
         </button>
       </div>
 
-      <div className="mt-4 text-sm text-gray-100">
+      <div className="mt-4 text-sm text-foreground/80">
         <span className="mr-4">
           Files: <strong>{groups.length}</strong>
         </span>
         <span className="mr-4">
           Total Rows: <strong>{totals.total}</strong>
         </span>
-        <span className={totals.withErrors ? "text-red-300 font-semibold" : ""}>
+        <span className={totals.withErrors ? "text-rose-600 font-semibold" : ""}>
           With Errors: <strong>{totals.withErrors}</strong>
         </span>
         {parsing && <span className="ml-3">Parsing…</span>}

@@ -130,13 +130,13 @@ export default function DocumentTable({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return "bg-teal-50 text-teal-800 border-teal-300";
+        return "bg-emerald-50 text-emerald-800 border-emerald-300";
       case "PENDING":
         return "bg-amber-50 text-amber-800 border-amber-300";
       case "INPROGRESS":
-        return "bg-blue-50 text-blue-800 border-blue-300";
+        return "bg-sky-50 text-sky-800 border-sky-300";
       case "FAILED":
-        return "bg-red-50 text-red-800 border-red-300";
+        return "bg-rose-50 text-rose-800 border-rose-300";
       default:
         return "bg-gray-50 text-gray-800 border-gray-300";
     }
@@ -145,13 +145,13 @@ export default function DocumentTable({
   const getStatusDotColor = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return "bg-teal-600";
+        return "bg-emerald-600";
       case "PENDING":
         return "bg-amber-500";
       case "INPROGRESS":
-        return "bg-blue-500";
+        return "bg-sky-500";
       case "FAILED":
-        return "bg-red-500 animate-pulse";
+        return "bg-rose-500 animate-pulse";
       default:
         return "bg-slate-400";
     }
@@ -206,13 +206,13 @@ export default function DocumentTable({
   };
 
   return (
-    <div className="space-y-4 bg-gradient-to-br from-teal-50/80 via-white to-amber-50/40 backdrop-blur-sm rounded-2xl border border-teal-200/50 p-6 shadow-[0_4px_20px_rgba(13,148,136,0.08)]">
+    <div className="space-y-4 bg-gradient-to-br from-sky-50/80 via-white to-amber-50/40 backdrop-blur-sm rounded-2xl border border-sky-200/50 p-6 shadow-[0_4px_20px_rgba(7,158,210,0.08)]">
       <ToastContainer position="top-right" autoClose={4000} />
 
       {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/80 backdrop-blur-sm border border-teal-200/60 rounded-xl px-4 py-3 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/80 backdrop-blur-sm border border-sky-200/60 rounded-xl px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-teal-700">
+          <div className="flex items-center gap-2 text-sky-700">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -228,7 +228,7 @@ export default function DocumentTable({
             </svg>
             <label
               htmlFor="status-filter"
-              className="text-xs uppercase tracking-widest font-semibold text-teal-800"
+              className="text-xs uppercase tracking-widest font-semibold text-sky-800"
             >
               Filter by status
             </label>
@@ -237,8 +237,8 @@ export default function DocumentTable({
             id="status-filter"
             value={statusFilter}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="min-w-[160px] px-3 py-2 text-sm font-medium bg-white border-2 border-teal-300 text-teal-900 rounded-lg
-                       hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-500
+            className="min-w-[160px] px-3 py-2 text-sm font-medium bg-white border-2 border-sky-300 text-sky-900 rounded-lg
+                       hover:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500
                        transition-all duration-200 cursor-pointer shadow-sm"
           >
             {STATUS_OPTIONS.map((opt) => (
@@ -252,9 +252,9 @@ export default function DocumentTable({
           <button
             onClick={() => setShowExport(!showExport)}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium 
-                      bg-gradient-to-r from-teal-500 to-cyan-500 text-white 
+                      bg-gradient-to-r from-sky-500 to-sky-500 text-white 
                       rounded-lg shadow-sm hover:shadow-md 
-                      hover:from-teal-600 hover:to-cyan-600 
+                      hover:from-sky-600 hover:to-sky-600 
                       transition-all duration-200"
           >
             <svg
@@ -316,9 +316,9 @@ export default function DocumentTable({
             )}
         </div>
         {statusFilter !== "ALL" && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-teal-100/80 border border-teal-300 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse" />
-            <span className="text-xs font-medium text-teal-800">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100/80 border border-sky-300 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-pulse" />
+            <span className="text-xs font-medium text-sky-800">
               Showing {documents.length}{" "}
               <span className="font-bold">{statusFilter}</span> document
               {documents.length !== 1 ? "s" : ""}
@@ -330,7 +330,7 @@ export default function DocumentTable({
       {/* States */}
       {isLoading && documents.length === 0 ? (
         <div className="flex items-center justify-center p-8">
-          <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
           <span className="ml-2 text-slate-700">Loading documents…</span>
         </div>
       ) : error && documents.length === 0 ? (
@@ -338,7 +338,7 @@ export default function DocumentTable({
           {error}
         </div>
       ) : documents.length === 0 ? (
-        <div className="p-8 text-center text-slate-600 bg-gradient-to-br from-teal-50/60 to-amber-50/40 rounded-lg border border-white/60">
+        <div className="p-8 text-center text-slate-600 bg-gradient-to-br from-sky-50/60 to-amber-50/40 rounded-lg border border-white/60">
           <p>
             No documents found
             {statusFilter !== "ALL" ? ` with status "${statusFilter}"` : ""}.
@@ -347,9 +347,9 @@ export default function DocumentTable({
       ) : (
         <>
           {/* Table */}
-          <div className="overflow-x-auto bg-white rounded-xl border border-teal-200/70 shadow-md">
+          <div className="overflow-x-auto bg-white rounded-xl border border-sky-200/70 shadow-md">
             <table className="min-w-full">
-              <thead className="bg-gradient-to-r from-teal-600 via-teal-500 to-cyan-500">
+              <thead className="bg-gradient-to-r from-sky-600 via-sky-500 to-sky-500">
                 <tr>
                   <th className="px-4 py-3.5 text-xs font-semibold tracking-wider text-left text-white uppercase">
                     Type
@@ -385,8 +385,8 @@ export default function DocumentTable({
                     <tr
                       key={`${document.accession_no || document.biblio_number}-${index}`}
                       className={`border-b border-slate-200 transition-colors duration-150 ${
-  index % 2 === 0 ? "bg-white" : "bg-teal-50"
-} hover:bg-teal-100/70`}
+  index % 2 === 0 ? "bg-white" : "bg-sky-50"
+} hover:bg-sky-100/70`}
                     >
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-800">
                         {document.content_type}
@@ -436,7 +436,7 @@ export default function DocumentTable({
                             className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg transition-all duration-150 shadow-sm ${
                               isRetrying
                                 ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                                : "bg-gradient-to-br from-teal-500 to-teal-600 text-white hover:from-teal-600 hover:to-teal-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+                                : "bg-gradient-to-br from-sky-500 to-sky-600 text-white hover:from-sky-600 hover:to-sky-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
                             }`}
                             title="Retry this document"
                           >
@@ -488,9 +488,9 @@ export default function DocumentTable({
           </div>
 
           {/* Pagination */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-2 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-teal-200/60 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mt-2 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-sky-200/60 shadow-sm">
             <div className="flex items-center gap-2 text-sm text-slate-700">
-              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-teal-100 text-teal-800 font-semibold text-xs rounded-md">
+              <span className="inline-flex items-center justify-center px-2.5 py-1 bg-sky-100 text-sky-800 font-semibold text-xs rounded-md">
                 {documents.length > 0 ? (page - 1) * limit + 1 : 0} –{" "}
                 {Math.min(page * limit, totalDocuments)}
               </span>
@@ -504,7 +504,7 @@ export default function DocumentTable({
               <button
                 onClick={handlePreviousPage}
                 disabled={page === 1}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-teal-300 text-teal-800 rounded-lg hover:bg-teal-50 hover:border-teal-500
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-sky-300 text-sky-800 rounded-lg hover:bg-sky-50 hover:border-sky-500
                            disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed disabled:hover:bg-slate-50
                            transition-all duration-150 shadow-sm"
               >
@@ -523,17 +523,17 @@ export default function DocumentTable({
                 </svg>
                 Previous
               </button>
-              <span className="px-3 py-2 text-sm text-slate-700 bg-teal-50 rounded-lg border border-teal-200">
+              <span className="px-3 py-2 text-sm text-slate-700 bg-sky-50 rounded-lg border border-sky-200">
                 Page{" "}
-                <span className="font-semibold text-teal-900">{page}</span> of{" "}
-                <span className="font-semibold text-teal-900">
+                <span className="font-semibold text-sky-900">{page}</span> of{" "}
+                <span className="font-semibold text-sky-900">
                   {totalPages || 1}
                 </span>
               </span>
               <button
                 onClick={handleNextPage}
                 disabled={page >= totalPages}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-teal-300 text-teal-800 rounded-lg hover:bg-teal-50 hover:border-teal-500
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-white border border-sky-300 text-sky-800 rounded-lg hover:bg-sky-50 hover:border-sky-500
                            disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-200 disabled:cursor-not-allowed disabled:hover:bg-slate-50
                            transition-all duration-150 shadow-sm"
               >
@@ -567,7 +567,7 @@ export default function DocumentTable({
       >
         <AlertDialog.Portal>
           <AlertDialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=open]:fade-in" />
-          <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-teal-200">
+          <AlertDialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl p-6 border border-sky-200">
             <AlertDialog.Title className="text-lg font-semibold text-slate-900">
               Retry this document?
             </AlertDialog.Title>
@@ -596,7 +596,7 @@ export default function DocumentTable({
               </AlertDialog.Cancel>
               <AlertDialog.Action
                 onClick={confirmRetry}
-                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 rounded-lg transition-all shadow-sm"
+                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 rounded-lg transition-all shadow-sm"
               >
                 Yes, retry
               </AlertDialog.Action>

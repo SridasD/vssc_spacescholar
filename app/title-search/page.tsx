@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,10 +16,12 @@ import {
   Download,
   ChevronDown,
   CheckSquare,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { SearchResults } from "@/components/search/SearchResults";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MenuBar } from "@/components/layout/MenuBar";
 import {
   exportToExcel,
@@ -29,26 +31,58 @@ import {
 
 const RECENT_KEY = "titleRecentSearches";
 
-export default function TitleSearchPage() {
+type SortKey = "relevance" | "newest" | "oldest" | "title";
+
+function sortResults(items: any[], sortKey: SortKey) {
+  if (sortKey === "relevance") return items;
+  const sorted = [...items];
+  if (sortKey === "newest") {
+    sorted.sort(
+      (a, b) =>
+        Number(b._source?.metadata?.doc_published_year || 0) -
+        Number(a._source?.metadata?.doc_published_year || 0)
+    );
+  } else if (sortKey === "oldest") {
+    sorted.sort(
+      (a, b) =>
+        Number(a._source?.metadata?.doc_published_year || 0) -
+        Number(b._source?.metadata?.doc_published_year || 0)
+    );
+  } else if (sortKey === "title") {
+    sorted.sort((a, b) =>
+      String(a._source?.metadata?.doc_title || "").localeCompare(
+        String(b._source?.metadata?.doc_title || "")
+      )
+    );
+  }
+  return sorted;
+}
+
+function TitleSearchPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  const [results, setResults] = useState<any[]>([]);
   const [allResults, setAllResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const initialParamsHandled = useRef(false);
 
-  const [tempDocType, setTempDocType] = useState("");
+  const [tempDocTypes, setTempDocTypes] = useState<Set<string>>(new Set());
   const [docTypes, setDocTypes] = useState<string[]>([]);
   const [tempYearFrom, setTempYearFrom] = useState("");
   const [tempYearTo, setTempYearTo] = useState("");
 
-  const [docType, setDocType] = useState("");
+  const [selectedDocTypes, setSelectedDocTypes] = useState<Set<string>>(new Set());
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const { toast } = useToast();
+
+  const [sortKey, setSortKey] = useState<SortKey>("relevance");
+  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showExport, setShowExport] = useState(false);
@@ -97,7 +131,8 @@ export default function TitleSearchPage() {
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
-    setSelectedIds(new Set()); 
+    setSelectedIds(new Set());
+    setCurrentPage(1);
     try {
       const res = await fetch(`/api/title-search?query=${encodeURIComponent(term)}`);
       const data = await res.json();
@@ -109,7 +144,6 @@ export default function TitleSearchPage() {
             }))
           )
         : [];
-      setResults(allHits);
       setAllResults(allHits);
     } catch (err) {
       console.error(err);
@@ -119,6 +153,29 @@ export default function TitleSearchPage() {
       setIsLoading(false);
     }
   };
+
+  // Arriving from home / discovery cards with ?q= and/or ?docType=
+  useEffect(() => {
+    if (initialParamsHandled.current) return;
+    initialParamsHandled.current = true;
+    const q = searchParams.get("q");
+    const docType = searchParams.get("docType");
+    if (docType) {
+      setTempDocTypes(new Set([docType]));
+      setSelectedDocTypes(new Set([docType]));
+    }
+    if (q) {
+      setSearchQuery(q);
+      fetchTitle(q)
+        .then(() => {
+          const updated = [q, ...JSON.parse(localStorage.getItem(RECENT_KEY) || "[]").filter((s: string) => s !== q)].slice(0, 10);
+          setRecentSearches(updated);
+          localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+        })
+        .catch(() => {});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -163,28 +220,87 @@ export default function TitleSearchPage() {
     toast({ title: "History Cleared", description: "All search history has been cleared." });
   };
 
-  const applyFilters = (overrides?: { docType?: string; yearFrom?: string; yearTo?: string }) => {
-    const effDocType = overrides?.docType ?? tempDocType;
-    const effYearFrom = overrides?.yearFrom ?? tempYearFrom;
-    const effYearTo = overrides?.yearTo ?? tempYearTo;
+  const toggleTempDocType = (type: string) => {
+    setTempDocTypes((prev) => {
+      const next = new Set(prev);
+      next.has(type) ? next.delete(type) : next.add(type);
+      return next;
+    });
+  };
 
-    let filtered = allResults;
-    if (effDocType) filtered = filtered.filter((item) => item._source?.metadata?.doc_content_type === effDocType);
-    if (effYearFrom) filtered = filtered.filter((item) => Number(item._source?.metadata?.doc_published_year) >= Number(effYearFrom));
-    if (effYearTo) filtered = filtered.filter((item) => Number(item._source?.metadata?.doc_published_year) <= Number(effYearTo));
-    setResults(filtered);
+  const applyFilters = () => {
+    setSelectedDocTypes(new Set(tempDocTypes));
+    setYearFrom(tempYearFrom);
+    setYearTo(tempYearTo);
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
-    setTempDocType(""); setTempYearFrom(""); setTempYearTo("");
-    setDocType(""); setYearFrom(""); setYearTo("");
-    setResults(allResults);
+    setTempDocTypes(new Set());
+    setTempYearFrom("");
+    setTempYearTo("");
+    setSelectedDocTypes(new Set());
+    setYearFrom("");
+    setYearTo("");
+    setCurrentPage(1);
   };
 
-  const removeDocTypeFilter = () => { setTempDocType(""); setDocType(""); applyFilters({ docType: "" }); };
-  const removeYearFilter = () => { setTempYearFrom(""); setTempYearTo(""); setYearFrom(""); setYearTo(""); applyFilters({ yearFrom: "", yearTo: "" }); };
+  const removeDocTypeFilter = (type: string) => {
+    setTempDocTypes((prev) => {
+      const next = new Set(prev);
+      next.delete(type);
+      return next;
+    });
+    setSelectedDocTypes((prev) => {
+      const next = new Set(prev);
+      next.delete(type);
+      return next;
+    });
+    setCurrentPage(1);
+  };
+  const removeYearFilter = () => {
+    setTempYearFrom("");
+    setTempYearTo("");
+    setYearFrom("");
+    setYearTo("");
+    setCurrentPage(1);
+  };
 
-  const hasActiveFilters = !!(docType || yearFrom || yearTo);
+  const hasActiveFilters = selectedDocTypes.size > 0 || !!yearFrom || !!yearTo;
+
+  const filteredResults = useMemo(() => {
+    let filtered = allResults;
+    if (selectedDocTypes.size > 0) {
+      filtered = filtered.filter((item) =>
+        selectedDocTypes.has(item._source?.metadata?.doc_content_type)
+      );
+    }
+    if (yearFrom) {
+      filtered = filtered.filter(
+        (item) => Number(item._source?.metadata?.doc_published_year) >= Number(yearFrom)
+      );
+    }
+    if (yearTo) {
+      filtered = filtered.filter(
+        (item) => Number(item._source?.metadata?.doc_published_year) <= Number(yearTo)
+      );
+    }
+    return filtered;
+  }, [allResults, selectedDocTypes, yearFrom, yearTo]);
+
+  const sortedResults = useMemo(
+    () => sortResults(filteredResults, sortKey),
+    [filteredResults, sortKey]
+  );
+
+  const totalPages =
+    pageSize === "all" ? 1 : Math.max(1, Math.ceil(sortedResults.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedResults = useMemo(() => {
+    if (pageSize === "all") return sortedResults;
+    const start = (safePage - 1) * pageSize;
+    return sortedResults.slice(start, start + pageSize);
+  }, [sortedResults, pageSize, safePage]);
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -193,14 +309,24 @@ export default function TitleSearchPage() {
       return next;
     });
   };
-  const allSelected = results.length > 0 && results.every((r) => selectedIds.has(String(r._id)));
-  const toggleSelectAll = () => {
-    setSelectedIds(() => (allSelected ? new Set() : new Set(results.map((r) => String(r._id)))));
+  const allVisibleSelected =
+    pagedResults.length > 0 && pagedResults.every((r) => selectedIds.has(String(r._id)));
+  const toggleSelectVisible = () => {
+    setSelectedIds((prev) => {
+      if (allVisibleSelected) {
+        const next = new Set(prev);
+        pagedResults.forEach((r) => next.delete(String(r._id)));
+        return next;
+      }
+      const next = new Set(prev);
+      pagedResults.forEach((r) => next.add(String(r._id)));
+      return next;
+    });
   };
 
   const handleExport = (type: "excel" | "pdf" | "doc") => {
-    const chosen = results.filter((r) => selectedIds.has(String(r._id)));
-    const data = chosen.length ? chosen : results;
+    const chosen = sortedResults.filter((r) => selectedIds.has(String(r._id)));
+    const data = chosen.length ? chosen : sortedResults;
     if (!data.length) {
       toast({ title: "Nothing to export", description: "Run a search first." });
       setShowExport(false);
@@ -218,22 +344,71 @@ export default function TitleSearchPage() {
   const showRecents = recentSearches.length > 0;
   const showAside = showRefine || showRecents;
 
-
   return (
-    <div className="min-h-screen flex flex-col bg-white text-slate-900">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       <MenuBar />
 
-      <div className="relative flex-1 flex overflow-hidden bg-white">
-        {/* Pink ambient canvas */}
-        <div
-          aria-hidden
-          className="absolute inset-0 z-0"
-          style={{
-            background:
-              "#ffffff",
-          }}
-        />
+      {/* Search console */}
+      <div
+        className="relative overflow-hidden px-4 py-6"
+        style={{
+          background:
+            "radial-gradient(circle at 90% 0%, rgba(245,196,78,0.22), transparent 26%), linear-gradient(135deg, var(--peacock-deep), hsl(var(--primary)) 58%, var(--peacock))",
+        }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <button
+              onClick={() => router.push(`/search${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`)}
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white/70 bg-white/10 hover:bg-white/15 hover:text-white transition-colors"
+            >
+              AI Search
+            </button>
+            <button
+              onClick={() => router.push(`/title-search${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`)}
+              className="px-4 py-2 rounded-xl text-sm font-bold text-primary bg-white shadow-md"
+            >
+              Title Search
+            </button>
+          </div>
 
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
+            className="flex gap-2 items-stretch rounded-2xl bg-white p-2"
+          >
+            <div className="relative flex-1 group">
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-peacock/70 group-focus-within:text-peacock-deep transition-colors pointer-events-none" />
+              <Input
+                placeholder="Enter words from a known document title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="pl-12 pr-10 h-12 text-base text-foreground placeholder:text-muted-foreground bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-md transition-colors">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading || !searchQuery.trim()}
+              className="h-12 px-6 text-white font-semibold rounded-xl transition-all bg-gradient-to-r from-saffron to-saffron-deep hover:opacity-90 shadow-md disabled:opacity-60"
+            >
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (<><SearchIcon className="w-4 h-4 mr-2" />Find title</>)}
+            </Button>
+          </form>
+          <p className="mt-3 text-xs text-white/75">
+            Search specifically within document titles across our repository of scholarly publications and research documents.
+          </p>
+        </div>
+      </div>
+
+      <div className="relative flex-1 flex overflow-hidden bg-background">
         <div className="relative z-10 flex w-full">
           <div className="container mx-auto px-4 py-6 flex gap-6">
 
@@ -241,40 +416,53 @@ export default function TitleSearchPage() {
             <aside className="w-72 hidden md:block space-y-4">
 
               {showRefine && (
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden sticky top-6 shadow-[0_1px_0_rgba(13,20,36,0.02),0_18px_40px_-24px_rgba(13,20,36,0.16)]">
-                <div className="px-4 py-3.5 flex items-center gap-2 bg-gradient-to-r from-pink-50 to-blue-50 border-b border-slate-100">
-                  <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-slate-200 flex items-center justify-center">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-pink-600" />
+              <div className="bg-white border border-border rounded-2xl overflow-hidden sticky top-6 shadow-sm">
+                <div className="px-4 py-3.5 flex items-center justify-between gap-2 bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-peacock-deep" />
+                    </div>
+                    <h2 className="text-sm font-semibold text-foreground">Refine Results</h2>
                   </div>
-                  <h2 className="text-sm font-semibold text-slate-800">Refine Results</h2>
+                  {hasActiveFilters && (
+                    <button onClick={clearFilters} className="text-[11px] font-semibold text-saffron-deep hover:underline">
+                      Clear all
+                    </button>
+                  )}
                 </div>
 
                 <div className="p-4 space-y-4">
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-                      <FileType className="w-3.5 h-3.5 text-slate-500" />
-                      Collection Type
+                    <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
+                      <FileType className="w-3.5 h-3.5 text-muted-foreground" />
+                      Document Type
                     </label>
-                    <select
-                      className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm text-slate-700 focus:border-pink-500 focus:outline-none bg-white transition-colors"
-                      value={tempDocType}
-                      onChange={(e) => setTempDocType(e.target.value)}
-                    >
-                      <option value="">All Collections</option>
+                    <div className="space-y-1.5">
                       {docTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
+                        <label key={type} className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={tempDocTypes.has(type)}
+                            onChange={() => toggleTempDocType(type)}
+                            className="w-4 h-4 accent-peacock cursor-pointer"
+                          />
+                          {type}
+                        </label>
                       ))}
-                    </select>
+                      {docTypes.length === 0 && (
+                        <p className="text-xs text-muted-foreground">No results yet.</p>
+                      )}
+                    </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-                      <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
+                      <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                       Published Year
                     </label>
                     <div className="flex gap-2 items-center">
                       <select
-                        className="flex-1 px-2.5 py-2 border-2 border-slate-200 rounded-lg text-sm text-slate-700 focus:border-pink-500 focus:outline-none bg-white transition-colors"
+                        className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
                         value={tempYearFrom}
                         onChange={(e) => setTempYearFrom(e.target.value)}
                       >
@@ -283,9 +471,9 @@ export default function TitleSearchPage() {
                           <option key={String(year)} value={String(year)}>{year}</option>
                         ))}
                       </select>
-                      <span className="text-slate-400 text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                       <select
-                        className="flex-1 px-2.5 py-2 border-2 border-slate-200 rounded-lg text-sm text-slate-700 focus:border-pink-500 focus:outline-none bg-white transition-colors"
+                        className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
                         value={tempYearTo}
                         onChange={(e) => setTempYearTo(e.target.value)}
                       >
@@ -297,44 +485,30 @@ export default function TitleSearchPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      type="button" variant="outline"
-                      className="flex-1 border-2 border-slate-200 hover:bg-slate-50 rounded-lg"
-                      onClick={clearFilters}
-                    >
-                      Reset
-                    </Button>
-                    <Button
-                      type="button"
-                      className="flex-1 bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white rounded-lg shadow-sm"
-                      onClick={() => {
-                        setDocType(tempDocType);
-                        setYearFrom(tempYearFrom);
-                        setYearTo(tempYearTo);
-                        applyFilters();
-                      }}
-                    >
-                      Apply
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    className="w-full bg-gradient-to-r from-saffron to-peacock-deep hover:opacity-90 text-white rounded-lg shadow-sm"
+                    onClick={applyFilters}
+                  >
+                    Apply filters
+                  </Button>
 
                   {hasActiveFilters && (
                     <div className="flex flex-wrap items-center gap-2 pt-1">
-                      {docType && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-pink-50 border border-pink-200 text-pink-700 text-xs rounded-full">
+                      {Array.from(selectedDocTypes).map((type) => (
+                        <span key={type} className="inline-flex items-center gap-1 px-2.5 py-1 bg-peacock-soft border border-peacock/20 text-peacock-deep text-xs rounded-full">
                           <FileType className="w-3 h-3" />
-                          {docType}
-                          <button onClick={removeDocTypeFilter} className="ml-0.5 hover:bg-pink-100 rounded-full p-0.5">
+                          {type}
+                          <button onClick={() => removeDocTypeFilter(type)} className="ml-0.5 hover:bg-peacock/10 rounded-full p-0.5">
                             <X className="w-2.5 h-2.5" />
                           </button>
                         </span>
-                      )}
+                      ))}
                       {(yearFrom || yearTo) && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-pink-50 border border-pink-200 text-pink-700 text-xs rounded-full">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-saffron-soft border border-saffron/20 text-saffron-deep text-xs rounded-full">
                           <Calendar className="w-3 h-3" />
                           {yearFrom || "…"} – {yearTo || "…"}
-                          <button onClick={removeYearFilter} className="ml-0.5 hover:bg-pink-100 rounded-full p-0.5">
+                          <button onClick={removeYearFilter} className="ml-0.5 hover:bg-saffron/10 rounded-full p-0.5">
                             <X className="w-2.5 h-2.5" />
                           </button>
                         </span>
@@ -346,31 +520,31 @@ export default function TitleSearchPage() {
               )}
 
               {recentSearches.length > 0 && (
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-[0_1px_0_rgba(13,20,36,0.02),0_18px_40px_-24px_rgba(13,20,36,0.16)]">
-                  <div className="px-4 py-3.5 flex items-center justify-between bg-gradient-to-r from-pink-50 to-blue-50 border-b border-slate-100">
-                    <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
-                      <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-slate-200 flex items-center justify-center">
-                        <History className="w-3.5 h-3.5 text-pink-600" />
+                <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+                  <div className="px-4 py-3.5 flex items-center justify-between bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
+                    <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                      <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
+                        <History className="w-3.5 h-3.5 text-peacock-deep" />
                       </div>
                       Recent Searches
                     </h2>
-                    <button onClick={handleClearAllSearches} className="p-1.5 hover:bg-slate-100 rounded-md transition-colors group" title="Clear all">
-                      <Trash2 className="h-3.5 w-3.5 text-slate-400 group-hover:text-red-500" />
+                    <button onClick={handleClearAllSearches} className="p-1.5 hover:bg-muted rounded-md transition-colors group" title="Clear all">
+                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-rose-500" />
                     </button>
                   </div>
 
                   <ScrollArea className="max-h-[40vh]">
                     <div className="p-2 space-y-1">
                       {recentSearches.map((search, index) => (
-                        <div key={index} className="group flex items-center rounded-xl border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all duration-200">
-                          <button className="flex-1 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-pink-700 text-left truncate min-w-0" onClick={() => runTerm(search)}>
-                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-slate-100 text-slate-500 group-hover:bg-pink-100 group-hover:text-pink-700 transition-colors flex-shrink-0">
+                        <div key={index} className="group flex items-center rounded-xl border border-transparent hover:border-border hover:bg-muted/60 transition-all duration-200">
+                          <button className="flex-1 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground/80 hover:text-peacock-deep text-left truncate min-w-0" onClick={() => runTerm(search)}>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-peacock-soft group-hover:text-peacock-deep transition-colors flex-shrink-0">
                               <SearchIcon className="w-3.5 h-3.5" />
                             </span>
                             <span className="truncate">{search}</span>
                           </button>
-                          <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 rounded-md transition-all" title="Remove">
-                            <X className="h-3 w-3 text-slate-400 hover:text-red-500" />
+                          <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 opacity-0 group-hover:opacity-100 hover:bg-rose-50 rounded-md transition-all" title="Remove">
+                            <X className="h-3 w-3 text-muted-foreground hover:text-rose-500" />
                           </button>
                         </div>
                       ))}
@@ -381,123 +555,98 @@ export default function TitleSearchPage() {
             </aside>
             )}
 
-                      <main className="flex-1 space-y-6 min-w-0">
-              {/* Intro line only — no "Search" heading */}
-              <p className="text-[16px] font-medium text-slate-700">
-Search specifically within document titles across our repository of scholarly publications and research documents.
-
-</p>
-             
-<div className="rounded-2xl p-[2.5px] bg-gradient-to-r from-pink-500 via-fuchsia-500 to-sky-500
-                shadow-lg shadow-fuchsia-500/25 hover:shadow-fuchsia-500/40
-                focus-within:shadow-fuchsia-500/40 transition-shadow duration-300">
-  <form
-    onSubmit={(e) => { e.preventDefault(); handleSearch(); }}
-    className="flex gap-2 items-stretch rounded-[14px] bg-white p-2"
-  >
-    <div className="relative flex-1 group">
-      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-pink-400 group-focus-within:text-pink-600 transition-colors pointer-events-none" />
-      <Input
-        placeholder="Search Documents"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        className="pl-12 pr-10 h-11 text-base text-slate-900 placeholder:text-slate-400 bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-      />
-      {searchQuery && (
-        <button type="button" onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-md transition-colors">
-          <X className="h-4 w-4 text-slate-400" />
-        </button>
-      )}
-    </div>
-
-    <Button
-      type="submit"
-      disabled={isLoading || !searchQuery.trim()}
-      className="h-11 px-6 text-white font-semibold rounded-xl transition-all
-                 bg-gradient-to-r from-pink-600 via-fuchsia-600 to-blue-600
-                 hover:from-pink-700 hover:via-fuchsia-700 hover:to-blue-700
-                 shadow-md shadow-fuchsia-500/40 hover:shadow-fuchsia-500/60
-                 hover:scale-[1.02] active:scale-95
-                 disabled:saturate-[0.9] disabled:opacity-90 disabled:cursor-not-allowed disabled:hover:scale-100"
-    >
-      {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (<><SearchIcon className="w-4 h-4 mr-2" />Search</>)}
-    </Button>
-  </form>
-</div>
-
+            <main className="flex-1 space-y-4 min-w-0">
               {hasSearched && !isLoading && !error && (
-                <div className="flex items-center gap-4 flex-wrap">
-                  <p className="text-sm text-slate-600">
-                    {results.length > 0 ? (
+                <div className="flex items-center gap-3 flex-wrap bg-white border border-border rounded-2xl px-4 py-3 shadow-sm">
+                  <p className="text-sm text-muted-foreground flex-1 min-w-[180px]">
+                    {sortedResults.length > 0 ? (
                       <>
                         Found{" "}
-                        <span className="font-semibold text-slate-900">{results.length}</span>{" "}
-                        {results.length === 1 ? "result" : "results"}
-                        {searchQuery && (<>{" "}for{" "}<span className="font-semibold text-pink-700">&ldquo;{searchQuery}&rdquo;</span></>)}
-                        {allResults.length > results.length && (
-                          <span className="text-slate-400 ml-2">({results.length} shown, filtered)</span>
-                        )}
+                        <span className="font-semibold text-foreground">{sortedResults.length}</span>{" "}
+                        {sortedResults.length === 1 ? "result" : "results"}
+                        {searchQuery && (<>{" "}for{" "}<span className="font-semibold text-peacock-deep">&ldquo;{searchQuery}&rdquo;</span></>)}
                       </>
                     ) : (
                       <span>No results found</span>
                     )}
                   </p>
 
-                  {results.length > 0 && (
-                    <div className="flex items-center gap-3">
-                      {/* Export dropdown — sits right next to the count, on the left */}
+                  {sortedResults.length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+                        <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectVisible} className="w-3.5 h-3.5 accent-saffron cursor-pointer" />
+                        Select visible
+                      </label>
+
+                      <select
+                        value={sortKey}
+                        onChange={(e) => { setSortKey(e.target.value as SortKey); setCurrentPage(1); }}
+                        className="h-9 px-2.5 text-xs font-medium border border-border rounded-lg bg-white text-foreground focus:outline-none focus:border-peacock"
+                      >
+                        <option value="relevance">Sort: Relevance</option>
+                        <option value="newest">Sort: Newest</option>
+                        <option value="oldest">Sort: Oldest</option>
+                        <option value="title">Sort: Title</option>
+                      </select>
+
+                      <select
+                        value={String(pageSize)}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPageSize(v === "all" ? "all" : Number(v));
+                          setCurrentPage(1);
+                        }}
+                        className="h-9 px-2.5 text-xs font-medium border border-border rounded-lg bg-white text-foreground focus:outline-none focus:border-peacock"
+                      >
+                        <option value="10">10 / page</option>
+                        <option value="20">20 / page</option>
+                        <option value="all">Show all</option>
+                      </select>
+
                       <div className="relative" ref={exportRef}>
                         <Button
                           type="button"
                           onClick={() => setShowExport((s) => !s)}
-                          className="h-9 px-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-pink-600 to-blue-600 hover:from-pink-700 hover:to-blue-700 text-white text-sm shadow-sm"
+                          className="h-9 px-3 flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-saffron to-peacock-deep hover:opacity-90 text-white text-xs shadow-sm"
                         >
-                          <Download className="w-4 h-4" />
+                          <Download className="w-3.5 h-3.5" />
                           Export{selectedCount > 0 ? ` (${selectedCount})` : ""}
-                          <ChevronDown className="w-4 h-4" />
+                          <ChevronDown className="w-3.5 h-3.5" />
                         </Button>
 
                         {showExport && (
-                          <div className="absolute left-0 mt-2 w-44 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
-                            <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400 border-b border-slate-100 flex items-center gap-1.5">
+                          <div className="absolute right-0 mt-2 w-40 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+                            <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border flex items-center gap-1.5">
                               <CheckSquare className="w-3 h-3" />
                               {selectedCount > 0 ? `${selectedCount} selected` : "All results"}
                             </div>
-                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-pink-50" onClick={() => handleExport("excel")}>Excel</button>
-                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-pink-50" onClick={() => handleExport("doc")}>DOC</button>
-                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-pink-50" onClick={() => handleExport("pdf")}>PDF</button>
+                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-peacock-soft" onClick={() => handleExport("excel")}>Excel</button>
+                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-peacock-soft" onClick={() => handleExport("doc")}>DOC</button>
+                            <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-peacock-soft" onClick={() => handleExport("pdf")}>PDF</button>
                           </div>
                         )}
                       </div>
-
-                      <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-                        <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="w-4 h-4 accent-pink-600 cursor-pointer" />
-                        Select all
-                        {selectedCount > 0 && <span className="text-pink-700 font-medium">({selectedCount})</span>}
-                      </label>
                     </div>
                   )}
                 </div>
               )}
 
               {error ? (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-100 flex items-center justify-center">
-                    <X className="w-6 h-6 text-red-600" />
+                <div className="bg-rose-50 border border-rose-200 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-rose-100 flex items-center justify-center">
+                    <X className="w-6 h-6 text-rose-600" />
                   </div>
-                  <p className="text-sm font-medium text-red-700">{error}</p>
-                  <p className="text-xs text-red-500 mt-1">Please try again in a moment.</p>
+                  <p className="text-sm font-medium text-rose-700">{error}</p>
+                  <p className="text-xs text-rose-500 mt-1">Please try again in a moment.</p>
                 </div>
               ) : hasSearched && isLoading ? (
                 <div className="mt-8 w-full flex flex-col items-center justify-center py-12 select-none">
-                  {/* animated illustration — save searching-docs.svg to /public/images/ */}
                   <img
                     src="/images/searching-docs.svg"
                     alt="Searching documents…"
                     className="w-[320px] max-w-full h-auto"
                   />
-                  <p className="mt-2 text-sm font-semibold tracking-wide bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+                  <p className="mt-2 text-sm font-semibold tracking-wide bg-gradient-to-r from-saffron-deep to-peacock-deep bg-clip-text text-transparent">
                     Searching through the cosmos<span className="ss-dots" />
                   </p>
                   <style dangerouslySetInnerHTML={{ __html: `
@@ -506,19 +655,66 @@ Search specifically within document titles across our repository of scholarly pu
                   ` }} />
                 </div>
               ) : (
-                <SearchResults
-                  results={results}
-                  isLoading={isLoading}
-                  allResults={allResults}
-                  showExtras={true}
-                  selectedIds={selectedIds}
-                  onToggleSelect={toggleSelect}
-                />
+                <>
+                  <SearchResults
+                    results={pagedResults}
+                    isLoading={isLoading}
+                    allResults={allResults}
+                    showExtras={true}
+                    selectedIds={selectedIds}
+                    onToggleSelect={toggleSelect}
+                  />
+                  {hasSearched && !error && pageSize !== "all" && totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-1.5 pt-2">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={safePage <= 1}
+                        className="w-9 h-9 grid place-items-center rounded-lg border border-border bg-white text-foreground/70 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 1)
+                        .map((p, idx, arr) => (
+                          <span key={p} className="flex items-center gap-1.5">
+                            {idx > 0 && arr[idx - 1] !== p - 1 && (
+                              <span className="text-muted-foreground text-sm px-1">…</span>
+                            )}
+                            <button
+                              onClick={() => setCurrentPage(p)}
+                              className={`w-9 h-9 rounded-lg text-sm font-semibold ${
+                                p === safePage
+                                  ? "bg-primary text-white"
+                                  : "border border-border bg-white text-foreground/70 hover:bg-muted"
+                              }`}
+                            >
+                              {p}
+                            </button>
+                          </span>
+                        ))}
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={safePage >= totalPages}
+                        className="w-9 h-9 grid place-items-center rounded-lg border border-border bg-white text-foreground/70 hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </main>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TitleSearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <TitleSearchPageInner />
+    </Suspense>
   );
 }

@@ -288,7 +288,7 @@ export default function DashboardBulkSplitter() {
       <ToastContainer position="top-right" autoClose={10000} />
 
       <motion.h2
-        className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-300 mb-6 w-[90%]"
+        className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-saffron-deep to-peacock-deep mb-6 w-[90%]"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -296,10 +296,10 @@ export default function DashboardBulkSplitter() {
         Step 1: Data Split Engine
       </motion.h2>
 
-     
+
       <motion.aside
         variants={itemVariants}
-        className="mb-6 p-4 rounded-lg bg-white/10 border border-white/10 text-blue-100"
+        className="mb-6 p-4 rounded-lg bg-peacock-soft border border-peacock/20 text-foreground/80"
       >
         <div className="font-semibold mb-2">How to Use</div>
         <ul className="list-disc list-inside space-y-2 text-sm">
@@ -307,22 +307,22 @@ export default function DashboardBulkSplitter() {
         <span className="font-medium">Upload a CSV file</span> by dragging it here or clicking the upload area.
           </li>
           <li>
-        <span className="font-medium">Required columns:</span> <span className="font-medium text-blue-200">Accession No, Title, Year, Document Type</span>
+        <span className="font-medium">Required columns:</span> <span className="font-medium text-peacock-deep">Accession No, Title, Year, Document Type</span>
           </li>
           <li>
-        <span className="font-medium">Year</span> must be <span className="font-medium text-blue-200">1800 or later</span> and cannot be empty or zero.
-          </li> 
-          <li>
-        If your file has more than <span className="font-medium text-green-200">1,000 rows</span>, it will be split into multiple CSV files of 1,000 rows each and downloaded as a ZIP.
+        <span className="font-medium">Year</span> must be <span className="font-medium text-peacock-deep">1800 or later</span> and cannot be empty or zero.
           </li>
           <li>
-        Files with more than <span className="font-medium text-red-200">10,000 rows</span> are not supported and will be rejected.
+        If your file has more than <span className="font-medium text-leaf">1,000 rows</span>, it will be split into multiple CSV files of 1,000 rows each and downloaded as a ZIP.
+          </li>
+          <li>
+        Files with more than <span className="font-medium text-rose-600">10,000 rows</span> are not supported and will be rejected.
           </li>
           <li>
         <span className="font-medium">Sample CSV format:</span>{" "}
         <button
           type="button"
-          className="underline text-blue-200 hover:text-blue-100 transition"
+          className="underline text-peacock-deep hover:text-peacock transition"
           onClick={() => {
             const sample = [
           [
@@ -357,7 +357,7 @@ export default function DashboardBulkSplitter() {
 
       <motion.div
         variants={itemVariants}
-        className="relative p-6 border-2 border-dashed border-blue-400/50 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+        className="relative p-6 border-2 border-dashed border-peacock/40 rounded-lg bg-peacock-soft/60 hover:bg-peacock-soft transition-colors"
       >
         <input
           ref={fileInputRef}
@@ -369,7 +369,7 @@ export default function DashboardBulkSplitter() {
         />
         <div className="text-center pointer-events-none">
           <svg
-        className="mx-auto h-12 w-12 text-blue-300"
+        className="mx-auto h-12 w-12 text-peacock"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -382,17 +382,17 @@ export default function DashboardBulkSplitter() {
           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
         />
           </svg>
-          <p className="mt-2 text-sm text-blue-200">
+          <p className="mt-2 text-sm text-muted-foreground">
         Drag & drop your CSV, or click to select
           </p>
-          {/* <p className="mt-1 text-xs text-blue-300">Processed locally in your browser.</p> */}
+          {/* <p className="mt-1 text-xs text-peacock">Processed locally in your browser.</p> */}
         </div>
       </motion.div>
 
       {file && (
         <motion.div
           variants={itemVariants}
-          className="mt-6 p-4 bg-white/10 border border-white/10 rounded-lg text-blue-100"
+          className="mt-6 p-4 bg-white border border-border rounded-lg text-foreground/80 shadow-sm"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <div className="font-semibold">
@@ -405,9 +405,9 @@ export default function DashboardBulkSplitter() {
             <div className="text-sm">
               Required columns:{" "}
               {requiredOk ? (
-                <span className="text-green-300 font-semibold">OK</span>
+                <span className="text-leaf font-semibold">OK</span>
               ) : (
-                <span className="text-red-300 font-semibold">
+                <span className="text-rose-600 font-semibold">
                   Missing: {missingRequired.join(", ")}
                 </span>
               )}
@@ -415,9 +415,9 @@ export default function DashboardBulkSplitter() {
             <div className="text-sm">
               Year check:{" "}
               {yearOk ? (
-                <span className="text-green-300 font-semibold">OK</span>
+                <span className="text-leaf font-semibold">OK</span>
               ) : (
-                <span className="text-red-300 font-semibold">
+                <span className="text-rose-600 font-semibold">
                   {yearInvalidCount > 0
                     ? `${yearInvalidCount.toLocaleString()} invalid`
                     : `Missing/invalid`}
@@ -428,7 +428,7 @@ export default function DashboardBulkSplitter() {
 
           {/* If year invalid, show a tiny hint with examples */}
           {!yearOk && yearInvalidCount > 0 && yearExamples.length > 0 && (
-            <div className="mt-2 text-xs text-red-200">
+            <div className="mt-2 text-xs text-rose-600">
               Examples:{" "}
               {yearExamples.map((ex, i) => (
                 <span key={i} className="mr-2">
@@ -451,7 +451,7 @@ export default function DashboardBulkSplitter() {
                 setYearInvalidCount(0);
                 setYearExamples([]);
               }}
-              className="px-4 py-2 rounded-lg bg-transparent border border-white/20 text-white hover:bg-white/10 transition-colors"
+              className="px-4 py-2 rounded-lg bg-transparent border border-border text-foreground hover:bg-muted transition-colors"
             >
               Clear
             </button>
@@ -483,8 +483,8 @@ export default function DashboardBulkSplitter() {
                 className={`px-5 py-2 rounded-lg flex items-center justify-center font-semibold shadow-sm transition-all duration-200
                   ${
                   parsing || !file || !requiredOk || !yearOk || rowCount <= SPLIT_ROWS
-                  ? "bg-gray-100 text-red-500 cursor-not-allowed border border-gray-200 opacity-70"
-                  : "bg-gradient-to-r from-blue-600 to-cyan-400 hover:from-blue-700 hover:to-cyan-500 text-white border border-blue-400 ring-2 ring-blue-200/30 hover:ring-blue-300/60 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  ? "bg-gray-100 text-rose-500 cursor-not-allowed border border-gray-200 opacity-70"
+                  : "bg-gradient-to-r from-primary to-peacock-deep hover:opacity-90 text-white border border-primary/40 ring-2 ring-primary/20 hover:ring-primary/40 focus:outline-none focus:ring-4 focus:ring-primary/30"
                   }
                 `}
                 title={
@@ -512,7 +512,7 @@ export default function DashboardBulkSplitter() {
                 {headersOriginal.map((h) => (
                   <span
                     key={h}
-                    className="px-2 py-1 rounded bg-blue-500/25 border border-blue-400/40"
+                    className="px-2 py-1 rounded bg-peacock-soft border border-peacock/30 text-peacock-deep"
                   >
                     {h}
                   </span>
@@ -521,7 +521,7 @@ export default function DashboardBulkSplitter() {
             </div>
           )}
 
-          {parsing && <div className="mt-3 text-blue-200 text-sm">Parsing… please wait</div>}
+          {parsing && <div className="mt-3 text-peacock-deep text-sm">Parsing… please wait</div>}
         </motion.div>
       )}
     </>

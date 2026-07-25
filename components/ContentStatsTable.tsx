@@ -38,7 +38,7 @@ const ContentStatsTable: React.FC<ContentStatsTableProps> = ({
       <div
         className={`rounded-2xl border border-white/70 backdrop-blur-sm p-6 text-center ${CARD_GRADIENTS.soft}`}
       >
-        <p className="text-sm text-slate-600 m-0">
+        <p className="text-sm text-muted-foreground m-0">
           No content statistics available yet.
         </p>
       </div>
@@ -50,11 +50,11 @@ const ContentStatsTable: React.FC<ContentStatsTableProps> = ({
       className={`rounded-2xl border border-white/70 backdrop-blur-sm p-5 ${CARD_GRADIENTS.soft}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[15px] font-medium m-0 text-slate-900">
+        <p className="text-[15px] font-medium m-0 text-foreground">
           By content type
         </p>
-        <p className="text-[11px] text-slate-500 m-0">
-          
+        <p className="text-[11px] text-muted-foreground m-0">
+
         </p>
       </div>
 
@@ -101,17 +101,17 @@ const ContentStatsTable: React.FC<ContentStatsTableProps> = ({
                 </span>
               </motion.div>
 
-              <span className="text-sm font-medium text-slate-700 text-center px-1">
+              <span className="text-sm font-medium text-foreground/80 text-center px-1">
                 {stat.contentType || "Unknown"}
               </span>
 
               {/* Mini status distribution bar */}
               <div className="flex h-[1] w-20 rounded-sm overflow-hidden bg-white/40">
-                <div className="h-full bg-teal-600" style={{ width: seg(completed) }} />
-                <div className="h-full bg-teal-300" style={{ width: seg(partial) }} />
-                <div className="h-full bg-blue-400" style={{ width: seg(processing) }} />
-                <div className="h-full bg-amber-500" style={{ width: seg(pending) }} />
-                <div className="h-full bg-red-500" style={{ width: seg(failed) }} />
+                <div className="h-full bg-leaf" style={{ width: seg(completed) }} />
+                <div className="h-full bg-peacock/60" style={{ width: seg(partial) }} />
+                <div className="h-full bg-peacock" style={{ width: seg(processing) }} />
+                <div className="h-full bg-turmeric" style={{ width: seg(pending) }} />
+                <div className="h-full bg-rose-500" style={{ width: seg(failed) }} />
               </div>
             </motion.div>
           );
@@ -119,12 +119,12 @@ const ContentStatsTable: React.FC<ContentStatsTableProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-white/60 text-[11px] text-slate-500">
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-600" /> Completed</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-300" /> Partial</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-400" /> Processing</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Pending</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Failed</span>
+      <div className="flex flex-wrap gap-3 mt-4 pt-3 border-t border-white/60 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-leaf" /> Completed</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-peacock/60" /> Partial</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-peacock" /> Processing</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-turmeric" /> Pending</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Failed</span>
       </div>
     </div>
   );

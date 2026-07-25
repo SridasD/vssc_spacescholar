@@ -31,8 +31,8 @@ const KpiCard: React.FC<KpiCardProps> = ({
   value,
   variant = "compact",
   gradient,
-  labelClass = "text-slate-700",
-  valueClass = "text-slate-900",
+  labelClass = "text-foreground/80",
+  valueClass = "text-foreground",
   dotClass,
   pulseDot = false,
   hint,
@@ -74,7 +74,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           {isNumeric ? <CountUp value={value as number} /> : value}
         </p>
         {hint && (
-          <span className="text-xs font-semibold text-red-700">{hint}</span>
+          <span className="text-xs font-semibold text-rose-700">{hint}</span>
         )}
       </div>
     </motion.div>

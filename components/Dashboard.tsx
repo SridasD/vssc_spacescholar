@@ -77,10 +77,10 @@ const Dashboard = () => {
     <div className="mt-8 space-y-3.5">
       <div className={`relative rounded-3xl p-6 sm:p-8 overflow-hidden ${PAGE_GRADIENT}`}>
         {/* Decorative sparkles */}
-        <span className="absolute top-7 right-20 w-1 h-1 rounded-full bg-teal-600 opacity-40" />
-        <span className="absolute top-14 right-56 w-[3px] h-[3px] rounded-full bg-teal-600 opacity-30" />
-        <span className="absolute top-20 right-80 w-[3px] h-[3px] rounded-full bg-amber-500 opacity-50" />
-        <span className="absolute top-40 right-8 w-1 h-1 rounded-full bg-teal-600 opacity-35" />
+        <span className="absolute top-7 right-20 w-1 h-1 rounded-full bg-peacock opacity-40" />
+        <span className="absolute top-14 right-56 w-[3px] h-[3px] rounded-full bg-peacock opacity-30" />
+        <span className="absolute top-20 right-80 w-[3px] h-[3px] rounded-full bg-turmeric opacity-50" />
+        <span className="absolute top-40 right-8 w-1 h-1 rounded-full bg-peacock opacity-35" />
 
         {/* HERO ROW: donut + actionable KPI stack */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-5">
@@ -92,10 +92,10 @@ const Dashboard = () => {
             transition={{ duration: 0.4 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-widest text-slate-700 m-0">
+              <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground m-0">
                 Pipeline status
               </p>
-            
+
             </div>
 
             <div className="flex items-center gap-7">
@@ -109,11 +109,11 @@ const Dashboard = () => {
                 completionRate={stats.overallCompletionRate}
               />
               <div className="flex-1 flex flex-col gap-3 text-[15px]">
-                <LegendRow label="Completed" value={stats.totalCompleted} dot="bg-teal-600" />
-                <LegendRow label="Partial" value={stats.totalPartiallyCompleted} dot="bg-teal-300" />
-                <LegendRow label="Processing" value={stats.totalProcessing} dot="bg-blue-400" />
-                <LegendRow label="Pending" value={stats.totalPending} dot="bg-amber-500" />
-                <LegendRow label="Failed" value={stats.totalFailed} dot="bg-red-500" pulse />
+                <LegendRow label="Completed" value={stats.totalCompleted} dot={STATUS_COLORS.completed.dot} />
+                <LegendRow label="Partial" value={stats.totalPartiallyCompleted} dot={STATUS_COLORS.partial.dot} />
+                <LegendRow label="Processing" value={stats.totalProcessing} dot={STATUS_COLORS.processing.dot} />
+                <LegendRow label="Pending" value={stats.totalPending} dot={STATUS_COLORS.pending.dot} />
+                <LegendRow label="Failed" value={stats.totalFailed} dot={STATUS_COLORS.failed.dot} pulse />
               </div>
             </div>
           </motion.div>
@@ -155,7 +155,7 @@ const Dashboard = () => {
             title="Total documents"
             value={stats.totalDocumentCount}
             gradient={CARD_GRADIENTS.cream}
-            labelClass="text-slate-600"
+            labelClass="text-muted-foreground"
           />
           <KpiCard
             title="Completed"
@@ -168,8 +168,8 @@ const Dashboard = () => {
             title="Partially completed"
             value={stats.totalPartiallyCompleted}
             gradient={CARD_GRADIENTS.lavender}
-            labelClass="text-purple-800"
-            valueClass="text-purple-900"
+            labelClass="text-indigo-800"
+            valueClass="text-indigo-900"
           />
         </div>
 
@@ -190,7 +190,7 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-[22px] font-medium tracking-tight text-slate-900 mb-5"
+          className="text-[22px] font-medium tracking-tight text-foreground mb-5"
         >
           Latest uploads
         </motion.h3>
@@ -210,12 +210,12 @@ interface LegendRowProps {
 }
 
 const LegendRow: React.FC<LegendRowProps> = ({ label, value, dot, pulse }) => (
-  <div className="flex justify-between items-center text-slate-800">
+  <div className="flex justify-between items-center text-foreground/80">
     <span className="inline-flex items-center gap-2.5 font-medium">
       <span className={`w-2.5 h-2.5 rounded-full ${dot} ${pulse ? "animate-pulse" : ""}`} />
       {label}
     </span>
-    <span className="font-bold tabular-nums text-lg text-slate-900">{value}</span>
+    <span className="font-bold tabular-nums text-lg text-foreground">{value}</span>
   </div>
 );
 

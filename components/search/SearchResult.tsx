@@ -8,6 +8,7 @@ import {
   MonitorSmartphone,
   ShieldAlert,
   Sparkles,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useCallback, JSX } from "react";
@@ -207,19 +208,37 @@ export function SearchResult({
   const getDocumentBadgeConfig = (docType?: string): BadgeConfig => {
     switch (docType) {
       case "Books":
-        return { color: "border-violet-400 text-violet-700 bg-violet-50", railColor: "bg-violet-500", cardTint: "from-violet-100/70 via-violet-50/45 to-violet-50/20", accent: "accent-violet-500", icon: <Book className="h-3 w-3 mr-1" /> };
+        return { color: "border-indigo-300 text-primary bg-indigo-50", railColor: "bg-primary", cardTint: "from-indigo-100/70 via-indigo-50/45 to-indigo-50/20", accent: "accent-indigo-500", icon: <Book className="h-3 w-3 mr-1" /> };
       case "Ebooks":
-        return { color: "border-emerald-400 text-emerald-700 bg-emerald-50", railColor: "bg-emerald-500", cardTint: "from-emerald-100/70 via-emerald-50/45 to-emerald-50/20", accent: "accent-emerald-500", icon: <MonitorSmartphone className="h-3 w-3 mr-1" /> };
+        return { color: "border-peacock/40 text-peacock-deep bg-peacock-soft", railColor: "bg-peacock", cardTint: "from-peacock-soft/70 via-peacock-soft/45 to-peacock-soft/20", accent: "accent-peacock", icon: <MonitorSmartphone className="h-3 w-3 mr-1" /> };
       case "Reports":
-        return { color: "border-amber-500 text-amber-700 bg-amber-50", railColor: "bg-amber-500", cardTint: "from-amber-100/70 via-amber-50/45 to-amber-50/20", accent: "accent-amber-500", icon: <FileBox className="h-3 w-3 mr-1" /> };
+        return { color: "border-amber-400 text-amber-800 bg-amber-50", railColor: "bg-turmeric", cardTint: "from-amber-100/70 via-amber-50/45 to-amber-50/20", accent: "accent-amber-500", icon: <FileBox className="h-3 w-3 mr-1" /> };
       case "Micro Fiche":
-        return { color: "border-orange-400 text-orange-700 bg-orange-50", railColor: "bg-orange-500", cardTint: "from-orange-100/70 via-orange-50/45 to-orange-50/20", accent: "accent-orange-500", icon: <FileDigit className="h-3 w-3 mr-1" /> };
+        return { color: "border-saffron/40 text-saffron-deep bg-saffron-soft", railColor: "bg-saffron", cardTint: "from-saffron-soft/70 via-saffron-soft/45 to-saffron-soft/20", accent: "accent-saffron", icon: <FileDigit className="h-3 w-3 mr-1" /> };
       case "Estandards":
-        return { color: "border-pink-400 text-pink-700 bg-pink-50", railColor: "bg-pink-500", cardTint: "from-pink-100/70 via-pink-50/45 to-pink-50/20", accent: "accent-pink-500", icon: <FileDigit className="h-3 w-3 mr-1" /> };
+        return { color: "border-rose-300 text-rose-700 bg-rose-50", railColor: "bg-rose-500", cardTint: "from-rose-100/70 via-rose-50/45 to-rose-50/20", accent: "accent-rose-500", icon: <FileDigit className="h-3 w-3 mr-1" /> };
       default:
-        return { color: "border-sky-400 text-sky-700 bg-sky-50", railColor: "bg-sky-500", cardTint: "from-sky-100/70 via-sky-50/45 to-sky-50/20", accent: "accent-sky-500", icon: <File className="h-3 w-3 mr-1" /> };
+        return { color: "border-leaf/40 text-leaf bg-leaf-soft", railColor: "bg-leaf", cardTint: "from-leaf-soft/70 via-leaf-soft/45 to-leaf-soft/20", accent: "accent-leaf", icon: <File className="h-3 w-3 mr-1" /> };
     }
   };
+
+  const handleCopyCitation = useCallback(async () => {
+    const citation = [
+      metadata?.author,
+      metadata?.doc_title,
+      metadata?.doc_published_year,
+      metadata?.accession_no ? `Accession No: ${metadata.accession_no}.` : null,
+    ]
+      .filter(Boolean)
+      .join(". ")
+      .replace(/\.\.+/g, ".");
+    try {
+      await navigator.clipboard.writeText(citation);
+      toast.success("Citation copied", { duration: 2500 });
+    } catch {
+      toast.error("Could not copy citation");
+    }
+  }, [metadata?.author, metadata?.doc_title, metadata?.doc_published_year, metadata?.accession_no]);
 
   const badgeConfig = getDocumentBadgeConfig(metadata?.doc_content_type);
 
@@ -235,11 +254,11 @@ export function SearchResult({
     <>
       <Card
         className={`relative w-full mb-3 overflow-hidden rounded-2xl
-                   bg-gradient-to-r ${badgeConfig.cardTint} border border-slate-200
-                   shadow-[0_1px_0_rgba(13,20,36,0.02),0_6px_18px_-12px_rgba(13,20,36,0.10)]
+                   bg-gradient-to-r ${badgeConfig.cardTint} border border-border
+                   shadow-sm
                    transition-all duration-300 ease-out
-                   hover:-translate-y-0.5 hover:border-slate-300
-                   hover:shadow-[0_1px_0_rgba(13,20,36,0.02),0_16px_36px_-16px_rgba(13,20,36,0.18)]`}
+                   hover:-translate-y-0.5 hover:border-primary/25
+                   hover:shadow-md`}
       >
         {/* color rail */}
         <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${badgeConfig.railColor}`} aria-hidden />
@@ -270,13 +289,13 @@ export function SearchResult({
           </div>
 
           {/* Title */}
-          <h3 className="text-[18px] md:text-[20px] leading-[1.3] tracking-[-0.005em] font-semibold text-slate-900 pr-28 sm:pr-48 md:pr-56 break-words">
+          <h3 className="text-[18px] md:text-[20px] leading-[1.3] tracking-[-0.005em] font-semibold text-foreground pr-28 sm:pr-48 md:pr-56 break-words">
             {metadata?.doc_title || "Untitled Document"}
           </h3>
 
           {/* Author */}
           {(metadata?.author || metadata?.additional_author) && (
-            <div className="text-[14px] font-medium text-slate-800">
+            <div className="text-[14px] font-medium text-foreground/80">
               {[metadata?.author, metadata?.additional_author].filter(Boolean).join(", ")}
             </div>
           )}
@@ -285,39 +304,39 @@ export function SearchResult({
           {subjectsList.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {subjectsList.map((subject, index) => (
-                <span key={index} className="px-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-600 text-[13px]">
+                <span key={index} className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground text-[13px]">
                   {String(subject)}
                 </span>
               ))}
             </div>
           )}
 
-        
+
           <div
-            className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 pt-3.5 border-t border-dashed border-slate-200 mt-1"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 pt-3.5 border-t border-dashed border-border mt-1"
             style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}
           >
             {showExtras && (
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] tracking-[0.16em] uppercase text-slate-500">Accession No.</span>
-                <span className="text-[15px] font-semibold text-slate-900">{accessionNo || "N/A"}</span>
+                <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Accession No.</span>
+                <span className="text-[15px] font-semibold text-foreground">{accessionNo || "N/A"}</span>
               </div>
             )}
 
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] tracking-[0.16em] uppercase text-slate-500">Year</span>
-              <span className="text-[15px] font-semibold text-slate-900">{metadata?.doc_published_year || "N/A"}</span>
+              <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Year</span>
+              <span className="text-[15px] font-semibold text-foreground">{metadata?.doc_published_year || "N/A"}</span>
             </div>
 
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] tracking-[0.16em] uppercase text-slate-500">Document No.</span>
-              <span className="text-[15px] font-semibold text-slate-900">{documentNo || "N/A"}</span>
+              <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Document No.</span>
+              <span className="text-[15px] font-semibold text-foreground">{documentNo || "N/A"}</span>
             </div>
 
             {showExtras && relevancePct !== null && (
               <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] tracking-[0.16em] uppercase text-slate-500">Relevance</span>
-                <span className="text-[15px] font-semibold text-slate-900">{relevancePct}%</span>
+                <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Relevance</span>
+                <span className="text-[15px] font-semibold text-foreground">{relevancePct}%</span>
               </div>
             )}
           </div>
@@ -325,7 +344,7 @@ export function SearchResult({
 
         {metadata?.doc_content_type === "Books" ? null : isRestricted ? (
           <div className="absolute top-4 right-4">
-            <div className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-red-50 border border-red-300 text-red-700 text-[10px] font-bold tracking-[0.14em] uppercase animate-pulse" title="This item is restricted">
+            <div className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-rose-50 border border-rose-300 text-rose-700 text-[10px] font-bold tracking-[0.14em] uppercase animate-pulse" title="This item is restricted">
               <ShieldAlert className="h-4 w-4" />
               Restricted — contact library
             </div>
@@ -336,14 +355,14 @@ export function SearchResult({
               <Button
                 variant="outline" size="sm" onClick={handleChatOpen} disabled={isLoading}
                 aria-label="Explore document with AI"
-                className="group relative overflow-hidden border border-teal-500 bg-teal-50 text-teal-700 text-[11px] font-bold tracking-[0.10em] uppercase hover:bg-gradient-to-br hover:from-teal-600 hover:to-cyan-600 hover:text-white hover:border-transparent hover:shadow-[0_8px_22px_-6px_rgba(13,148,136,0.45)] focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-1 active:scale-95 transition-all duration-300"
+                className="group relative overflow-hidden border border-peacock bg-peacock-soft text-peacock-deep text-[11px] font-bold tracking-[0.10em] uppercase hover:bg-gradient-to-br hover:from-peacock hover:to-peacock-deep hover:text-white hover:border-transparent hover:shadow-md focus-visible:ring-2 focus-visible:ring-peacock/40 focus-visible:ring-offset-1 active:scale-95 transition-all duration-300"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" aria-hidden />
                 <Sparkles className="h-3.5 w-3.5 mr-1.5 relative transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
                 <span className="hidden sm:inline relative">IntelliDoc</span>
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-sm">
-                    <div className="w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-peacock border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </Button>
@@ -365,6 +384,21 @@ export function SearchResult({
                 </span>
               </div>
             )}
+
+            <div className="relative group/tip">
+              <button
+                type="button"
+                onClick={handleCopyCitation}
+                aria-label="Copy citation"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-300 text-slate-500 shadow-[0_1px_0_rgba(13,20,36,0.02)] transition-all duration-200 hover:border-primary/40 hover:text-primary hover:bg-primary/5 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1"
+              >
+                <Copy className="h-4 w-4" />
+              </button>
+              <span role="tooltip" className="pointer-events-none absolute top-full right-0 mt-2 z-30 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium normal-case tracking-normal text-white shadow-[0_8px_20px_-6px_rgba(13,20,36,0.5)] opacity-0 -translate-y-1 transition-all duration-200 ease-out group-hover/tip:opacity-100 group-hover/tip:translate-y-0">
+                Copy citation
+                <span className="absolute right-3 bottom-full h-0 w-0 border-x-4 border-b-4 border-x-transparent border-b-slate-900" aria-hidden />
+              </span>
+            </div>
           </div>
         )}
       </Card>

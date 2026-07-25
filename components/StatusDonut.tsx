@@ -14,11 +14,11 @@ interface StatusDonutProps {
 }
 
 const SEG_COLORS = {
-  completed: "#0D9488",
-  partial: "#5EEAD4",
-  processing: "#60A5FA",
-  pending: "#F59E0B",
-  failed: "#EF4444",
+  completed: "#168b72",
+  partial: "#7DD3EF",
+  processing: "#079ed2",
+  pending: "#f5c44e",
+  failed: "#e65b8d",
 };
 
 export default function StatusDonut({
@@ -89,10 +89,10 @@ export default function StatusDonut({
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <p className="text-[58px] font-medium leading-none tracking-tight text-teal-700 m-0">
+        <p className="text-[58px] font-medium leading-none tracking-tight text-primary m-0">
           <CountUp value={Math.round(completionRate)} suffix="%" />
         </p>
-        <p className="mt-1 text-[12px] uppercase tracking-widest text-slate-500 font-medium">
+        <p className="mt-1 text-[12px] uppercase tracking-widest text-muted-foreground font-medium">
           complete
         </p>
       </div>

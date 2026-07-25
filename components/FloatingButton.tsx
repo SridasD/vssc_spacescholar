@@ -20,7 +20,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({ href, icon }) => {
       >
         <Link 
           href={href}
-          className="flex items-center justify-center w-16 h-16 text-white bg-indigo-600 rounded-full shadow-lg hover:bg-indigo-700"
+          className="flex items-center justify-center w-16 h-16 text-white bg-primary rounded-full shadow-lg hover:bg-primary/90"
         >
           {icon}
         </Link>

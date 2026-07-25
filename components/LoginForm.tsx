@@ -48,7 +48,7 @@ export default function LoginForm() {
       {/* Clickable "Back to home" — top-left of the card area */}
       <button
         onClick={() => router.push('/')}
-        className="absolute -top-12 left-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors backdrop-blur-sm"
+        className="absolute -top-12 left-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-colors"
         aria-label="Back to home"
       >
         <svg
@@ -63,15 +63,9 @@ export default function LoginForm() {
         Back to Home
       </button>
 
-      {/* Card with glowing gradient border */}
-      <div className="relative rounded-2xl bg-gradient-to-br from-blue-500/40 via-indigo-500/30 to-purple-500/40 p-[1px] shadow-[0_8px_40px_rgba(59,130,246,0.15)]">
-        {/* Soft glow behind card */}
-        <div className="absolute -inset-4 bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-2xl rounded-3xl pointer-events-none" />
-
-        <div className="relative bg-slate-900/80 backdrop-blur-xl rounded-2xl p-8">
-          {/* Soft gradient glow behind logo */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-br from-blue-400/30 via-indigo-400/20 to-purple-400/30 blur-3xl rounded-full pointer-events-none" />
-
+      {/* Card with saffron-to-indigo gradient border */}
+      <div className="relative rounded-2xl bg-gradient-to-br from-saffron/50 via-peacock/30 to-primary/50 p-[1px] shadow-[0_8px_40px_rgba(51,45,125,0.12)]">
+        <div className="relative bg-white rounded-2xl p-8">
           {/* Logo + Title */}
           <div className="relative flex flex-col items-center mb-8">
             <div className="mb-4">
@@ -81,22 +75,22 @@ export default function LoginForm() {
                 width={64}
                 height={64}
                 priority
-                className="object-contain drop-shadow-[0_0_15px_rgba(96,165,250,0.4)]"
+                className="object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-[0_0_20px_rgba(96,165,250,0.3)]">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-primary">
               SPACE SCHOLAR
             </h1>
-            <p className="text-sm text-gray-400 mt-1.5">
+            <p className="text-sm text-muted-foreground mt-1.5">
               Sign in to continue
             </p>
           </div>
 
           {/* Hidden register link block — preserved */}
           <div className="text-center hidden">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               New Explorer?{" "}
-              <Link href="/register" className="font-medium text-blue-400 hover:text-blue-300 hover:underline">
+              <Link href="/register" className="font-medium text-primary hover:underline">
                 Initialize Account
               </Link>
             </p>
@@ -104,7 +98,7 @@ export default function LoginForm() {
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-3 text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <div className="mb-4 p-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg">
               {error}
             </div>
           )}
@@ -112,7 +106,7 @@ export default function LoginForm() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1.5">
                 Email
               </label>
               <input
@@ -123,18 +117,18 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-3.5 py-2.5 text-sm text-white placeholder-gray-500 bg-slate-800/60 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                className="block w-full px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-white border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 placeholder="you@institution.edu"
                 aria-label="Enter your email address"
                 title="Please enter a valid email address"
               />
-              <span className="block mt-1.5 text-xs text-gray-500">
+              <span className="block mt-1.5 text-xs text-muted-foreground">
                 Use your institutional email for verification
               </span>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground/80 mb-1.5">
                 Password
               </label>
               <input
@@ -145,7 +139,7 @@ export default function LoginForm() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full px-3.5 py-2.5 text-sm text-white placeholder-gray-500 bg-slate-800/60 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                className="block w-full px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-white border border-input rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -157,15 +151,15 @@ export default function LoginForm() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="w-4 h-4 text-blue-500 bg-slate-800 border-slate-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary bg-white border-input rounded focus:ring-primary"
                 />
-                <label htmlFor="remember-me" className="block ml-2 text-sm text-gray-300">
+                <label htmlFor="remember-me" className="block ml-2 text-sm text-foreground/80">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-blue-400 hover:text-blue-300 hover:underline">
+                <a href="#" className="font-medium text-primary hover:underline">
                   Forgot your password?
                 </a>
               </div>
@@ -174,7 +168,8 @@ export default function LoginForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              className="w-full px-4 py-2.5 text-sm font-semibold text-white rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              style={{ background: "linear-gradient(135deg, var(--saffron), var(--saffron-deep))" }}
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
@@ -184,13 +179,13 @@ export default function LoginForm() {
 
       {/* Footer */}
       <footer className="mt-6 text-center space-y-2">
-        <p className="text-xs font-medium text-gray-300 tracking-wide">
+        <p className="text-xs font-medium text-foreground/70 tracking-wide">
           SPACE SCHOLAR © 2026 · Vikram Sarabhai Space Centre
         </p>
-        <p className="text-xs text-gray-500 flex items-center justify-center gap-1.5 flex-wrap">
+        <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 flex-wrap">
           <span className="italic">&quot;A Partnership in Innovation&quot;</span>
-          <span className="inline-block w-1 h-1 bg-blue-400 rounded-full" />
-          <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          <span className="inline-block w-1 h-1 bg-saffron rounded-full" />
+          <span className="bg-gradient-to-r from-primary to-peacock-deep bg-clip-text text-transparent">
             VSSC &amp; Digital University Kerala
           </span>
         </p>

@@ -262,13 +262,13 @@ export default function DocumentUploadForm() {
   };
 
   const inputBase =
-    "w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 text-slate-900 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-500 transition-all duration-200";
+    "w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 text-slate-900 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-500 transition-all duration-200";
   const inputError =
     "w-full px-3.5 py-2.5 text-sm bg-white border border-red-300 text-slate-900 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400 transition-all duration-200";
   const labelClass = "block text-sm font-medium text-slate-700 mb-1.5";
 
   return (
-    <div className="bg-gradient-to-br from-teal-50/80 via-white to-amber-50/40 backdrop-blur-sm rounded-2xl border border-teal-200/50 p-6 sm:p-8 shadow-[0_4px_20px_rgba(13,148,136,0.08)]">
+    <div className="bg-gradient-to-br from-sky-50/80 via-white to-amber-50/40 backdrop-blur-sm rounded-2xl border border-sky-200/50 p-6 sm:p-8 shadow-[0_4px_20px_rgba(7,158,210,0.08)]">
       <ToastContainer position="top-right" autoClose={3000} />
 
       <motion.div initial="hidden" animate="visible" variants={containerVariants}>
@@ -283,7 +283,7 @@ export default function DocumentUploadForm() {
 
         {success && (
           <motion.div
-            className="mb-5 p-3.5 bg-teal-50 border border-teal-200 rounded-lg text-teal-800 text-sm"
+            className="mb-5 p-3.5 bg-sky-50 border border-sky-200 rounded-lg text-sky-800 text-sm"
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -497,7 +497,7 @@ export default function DocumentUploadForm() {
                 <button
                   type="button"
                   onClick={handleChipAdd}
-                  className="px-4 py-2 text-sm font-medium bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 transition-colors shadow-sm whitespace-nowrap"
+                  className="px-4 py-2 text-sm font-medium bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-lg hover:from-sky-600 hover:to-sky-700 transition-colors shadow-sm whitespace-nowrap"
                 >
                   Add
                 </button>
@@ -507,15 +507,15 @@ export default function DocumentUploadForm() {
                 {formData.additionalDetails.map((detail, index) => (
                   <motion.div
                     key={index}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 border border-teal-200 rounded-full"
+                    className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 border border-sky-200 rounded-full"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                   >
-                    <span className="text-teal-800 text-xs">{detail}</span>
+                    <span className="text-sky-800 text-xs">{detail}</span>
                     <button
                       type="button"
                       onClick={() => handleChipDelete(index)}
-                      className="w-4 h-4 rounded-full flex items-center justify-center bg-teal-200 hover:bg-teal-300 transition-colors text-teal-800 text-xs leading-none"
+                      className="w-4 h-4 rounded-full flex items-center justify-center bg-sky-200 hover:bg-sky-300 transition-colors text-sky-800 text-xs leading-none"
                       aria-label="Remove"
                     >
                       ×
@@ -530,7 +530,7 @@ export default function DocumentUploadForm() {
                 <label className={labelClass}>
                   Document File <span className="text-red-500">*</span>
                 </label>
-                <div className="relative p-6 border-2 border-dashed border-teal-300 rounded-xl bg-teal-50/40 hover:bg-teal-50/70 hover:border-teal-400 transition-colors">
+                <div className="relative p-6 border-2 border-dashed border-sky-300 rounded-xl bg-sky-50/40 hover:bg-sky-50/70 hover:border-sky-400 transition-colors">
                   <input
                     id="file"
                     name="file"
@@ -540,7 +540,7 @@ export default function DocumentUploadForm() {
                   />
                   <div className="text-center">
                     <svg
-                      className="mx-auto h-10 w-10 text-teal-500"
+                      className="mx-auto h-10 w-10 text-sky-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -564,12 +564,12 @@ export default function DocumentUploadForm() {
 
                 {formData.file && (
                   <motion.div
-                    className="mt-3 p-3 bg-white border border-teal-200 rounded-lg flex items-center shadow-sm"
+                    className="mt-3 p-3 bg-white border border-sky-200 rounded-lg flex items-center shadow-sm"
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
                     <svg
-                      className="h-4 w-4 text-teal-600 mr-2 flex-shrink-0"
+                      className="h-4 w-4 text-sky-600 mr-2 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -612,7 +612,7 @@ export default function DocumentUploadForm() {
                 disabled={!isSubmitEnabled() || isLoading}
                 className={`px-6 py-2.5 text-sm font-semibold rounded-lg flex items-center justify-center transition-all shadow-sm ${
                   isSubmitEnabled() && !isLoading
-                    ? "bg-gradient-to-br from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white hover:shadow-md"
+                    ? "bg-gradient-to-br from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white hover:shadow-md"
                     : "bg-slate-200 text-slate-500 cursor-not-allowed"
                 }`}
               >

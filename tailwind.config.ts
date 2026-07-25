@@ -61,6 +61,24 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        saffron: {
+          DEFAULT: 'rgb(var(--saffron-rgb) / <alpha-value>)',
+          deep: 'rgb(var(--saffron-deep-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--saffron-soft-rgb) / <alpha-value>)',
+        },
+        peacock: {
+          DEFAULT: 'rgb(var(--peacock-rgb) / <alpha-value>)',
+          deep: 'rgb(var(--peacock-deep-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--peacock-soft-rgb) / <alpha-value>)',
+        },
+        leaf: {
+          DEFAULT: 'rgb(var(--leaf-rgb) / <alpha-value>)',
+          soft: 'rgb(var(--leaf-soft-rgb) / <alpha-value>)',
+        },
+        turmeric: 'rgb(var(--turmeric-rgb) / <alpha-value>)',
+      },
+      fontFamily: {
+        display: ['var(--font-display)', 'Georgia', 'serif'],
       },
       keyframes: {
         'accordion-down': {

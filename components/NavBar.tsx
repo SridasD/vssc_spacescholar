@@ -12,7 +12,15 @@ import { Home, Upload, LayoutDashboard } from "lucide-react";
 const NavBar: React.FC = () => {
     const router = useRouter();
     return (
-      <nav className="bg-white shadow">
+      <nav className="bg-white shadow border-b border-border">
+        <div
+          className="h-[5px] w-full"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--saffron) 0 34%, #fff 34% 66%, var(--leaf) 66% 100%)",
+          }}
+          aria-hidden
+        />
         <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
@@ -41,11 +49,11 @@ const NavBar: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-1">
               <Link href="/dashboard">
                 <Button
                   variant="ghost"
-                  className="flex items-center gap-2 text-primary"
+                  className="flex items-center gap-2 rounded-full text-foreground/80 hover:text-primary hover:bg-primary/10"
                 >
                   <LayoutDashboard className="w-4 h-4" />
                   Dashboard
@@ -56,7 +64,7 @@ const NavBar: React.FC = () => {
                 <div className="relative">
                   <Button
                     variant="ghost"
-                    className="flex items-center gap-2 text-primary"
+                    className="flex items-center gap-2 rounded-full text-foreground/80 hover:text-peacock-deep hover:bg-peacock-soft"
                     id="metadata-uploader-dropdown-btn"
                     type="button"
                     onClick={() => {
@@ -85,13 +93,13 @@ const NavBar: React.FC = () => {
 
                   <div
                     id="metadata-uploader-dropdown"
-                    className="absolute left-0 z-50 mt-2 w-72 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 hidden"
+                    className="absolute left-0 z-50 mt-2 w-72 origin-top-right rounded-xl border border-border bg-white shadow-lg hidden"
                   >
                     <div className="py-1">
                       <Link href="/metadata-splitter">
-                        <span className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <span className="block px-4 py-2 text-sm text-foreground hover:bg-peacock-soft cursor-pointer">
                           Step 1: Upload CSV
-                          <span className="block text-xs text-gray-500">
+                          <span className="block text-xs text-muted-foreground">
                             Large file? No worries—files with more than 1,000 rows
                             are auto-split for you.
                           </span>
@@ -99,9 +107,9 @@ const NavBar: React.FC = () => {
                       </Link>
 
                       <Link href="/metadata-uploader">
-                        <span className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <span className="block px-4 py-2 text-sm text-foreground hover:bg-peacock-soft cursor-pointer">
                           Step 2: Review & Submit
-                          <span className="block text-xs text-gray-500">
+                          <span className="block text-xs text-muted-foreground">
                             After your file is successfully validated and contains
                             up to 1,000 rows (or has been split), you can review
                             and submit it for final processing
@@ -116,7 +124,7 @@ const NavBar: React.FC = () => {
               <Button
                 variant="ghost"
                 onClick={() => router.push("/upload")}
-                className="flex items-center gap-2 text-primary"
+                className="flex items-center gap-2 rounded-full text-foreground/80 hover:text-saffron-deep hover:bg-saffron-soft"
               >
                 <Upload className="w-4 h-4" />
                 Upload Documents

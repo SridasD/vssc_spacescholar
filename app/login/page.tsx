@@ -16,28 +16,24 @@ export default async function LoginPage() {
     }
 
     return (
-        <div className="relative flex items-center justify-center min-h-screen bg-slate-950 overflow-hidden">
-            {/* Starfield background */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(30,41,59,0.6)_0%,_rgba(2,6,23,1)_70%)]" />
-
-            {/* Decorative gradient orbs */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
+        <div className="relative flex items-center justify-center min-h-screen bg-background overflow-hidden">
+            {/* Tricolour top strip */}
             <div
-                className="absolute inset-0 opacity-60 pointer-events-none"
+                className="absolute top-0 left-0 h-[5px] w-full"
                 style={{
-                    backgroundImage: `
-                        radial-gradient(1px 1px at 20% 30%, white, transparent),
-                        radial-gradient(1px 1px at 60% 70%, white, transparent),
-                        radial-gradient(1px 1px at 80% 20%, white, transparent),
-                        radial-gradient(1px 1px at 30% 80%, white, transparent),
-                        radial-gradient(1px 1px at 90% 50%, white, transparent),
-                        radial-gradient(1px 1px at 10% 60%, white, transparent),
-                        radial-gradient(1.5px 1.5px at 50% 40%, rgba(147,197,253,0.8), transparent),
-                        radial-gradient(1.5px 1.5px at 70% 90%, rgba(196,181,253,0.8), transparent)
-                    `,
-                    backgroundSize: '300px 300px, 250px 250px, 200px 200px, 350px 350px, 280px 280px, 320px 320px, 400px 400px, 380px 380px',
+                    background:
+                        "linear-gradient(90deg, var(--saffron) 0 34%, #fff 34% 66%, var(--leaf) 66% 100%)",
+                }}
+                aria-hidden
+            />
+
+            {/* Soft tricolour blob decoration */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                aria-hidden
+                style={{
+                    background:
+                        "radial-gradient(circle at 12% 18%, rgba(244,122,31,0.14), transparent 27%), radial-gradient(circle at 88% 20%, rgba(7,158,210,0.14), transparent 28%), radial-gradient(circle at 80% 86%, rgba(22,139,114,0.12), transparent 24%)",
                 }}
             />
 
