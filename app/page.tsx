@@ -12,7 +12,6 @@ import {
   Brain,
 } from "lucide-react";
 import Image from "next/image";
-import vsscNewLogo from "@/public/images/vssc-new-logo.png";
 import { MenuBar } from "@/components/layout/MenuBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import LiaPortrait from "@/components/LiaPortrait";
@@ -189,7 +188,7 @@ export default function Home() {
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <div className="hero-logo-wrap">
             <Image
-              src={vsscNewLogo}
+              src="/web-app-manifest-512x512.png"
               alt="VSSC"
               width={110}
               height={110}
@@ -198,20 +197,13 @@ export default function Home() {
             />
           </div>
 
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest text-saffron-deep bg-white/[0.76] border border-saffron/20 shadow-[0_8px_26px_rgba(33,27,91,0.06)]">
-            <span className="w-2 h-2 rounded-full bg-saffron shadow-[0_0_0_5px_rgba(244,122,31,0.12)]" />
-            Intelligent Library Information System · ILIS
-          </span>
-
-          <h1 className="font-display mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.05] text-foreground">
-            Search the knowledge behind{" "}
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.05] text-foreground">
             <span className="bg-gradient-to-r from-saffron-deep via-saffron to-peacock-deep bg-clip-text text-transparent">
-              India&apos;s space journey.
+              SPACE SCHOLAR
             </span>
           </h1>
-          <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Explore the VSSC Library repository with concept-aware discovery, precise title
-            lookup, document intelligence and LIA, your virtual library assistant.
+          <p className="mt-3 text-sm sm:text-base font-medium text-muted-foreground tracking-wide">
+            AI-Powered Knowledge Discovery
           </p>
 
           {/* Search command */}
@@ -304,24 +296,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {[
-              "Natural-language discovery",
-              "Curated library collections",
-              "Readable document insights",
-            ].map((label) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-foreground/70 bg-white/70 border border-border"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-leaf" />
-                {label}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-            {[
+              { icon: Search, label: "Natural-language discovery", accent: "saffron" as const },
               { icon: Brain, label: "Semantic Understanding", accent: "indigo" as const },
               { icon: FileText, label: "Document Summarisation", accent: "peacock" as const },
               { icon: MessageSquare, label: "Deep Level Interaction", accent: "leaf" as const },
@@ -342,7 +319,7 @@ export default function Home() {
         </div>
 
         <style dangerouslySetInnerHTML={{ __html: `
-          .hero-logo-wrap { position: relative; display: inline-grid; place-items: center; margin-bottom: 14px; }
+          .hero-logo-wrap { position: relative; display: inline-grid; place-items: center; margin-bottom: 0; }
           .hero-logo-wrap::before {
             content: ""; position: absolute; width: 82%; aspect-ratio: 1; border-radius: 50%;
             background: radial-gradient(circle, rgba(7,158,210,0.16), transparent 68%);
@@ -481,7 +458,7 @@ export default function Home() {
             Comprehensive analytics of Space Scholar&apos;s knowledge ecosystem.
           </h2>
           <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-            A live breakdown of the repository by content type — pick one to start browsing.
+            A live breakdown of the repository by content type .
           </p>
 
           {stats.length > 0 ? (
@@ -489,10 +466,9 @@ export default function Home() {
               {stats.map((stat, i) => {
                 const accent = STAT_ACCENTS[i % STAT_ACCENTS.length];
                 return (
-                  <button
+                  <div
                     key={stat.contentType}
-                    onClick={() => router.push(`/search?docType=${encodeURIComponent(stat.contentType)}`)}
-                    className="text-left rounded-2xl border border-border bg-white p-6 hover:-translate-y-0.5 hover:shadow-md transition-all relative overflow-hidden"
+                    className="text-left rounded-2xl border border-border bg-white p-6 relative overflow-hidden"
                   >
                     <span
                       className={`font-display text-3xl font-bold ${ACCENT_CLASSES[accent].icon}`}
@@ -504,7 +480,7 @@ export default function Home() {
                       {stat.totalDocuments.toLocaleString()} item
                       {stat.totalDocuments === 1 ? "" : "s"}
                     </p>
-                  </button>
+                  </div>
                 );
               })}
             </div>

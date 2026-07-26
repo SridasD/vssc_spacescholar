@@ -30,12 +30,16 @@ export default function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        // Wrong credentials, lockout, etc. — an expected user-facing outcome,
+        // not a bug, so it's shown inline without logging/throwing.
+        setError(data.error || "Login failed");
+        return;
       }
 
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
+      // Genuinely unexpected (network failure, malformed response, etc.)
       console.error("Login error:", error);
       setError(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {

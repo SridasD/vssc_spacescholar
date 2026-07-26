@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import vsscLogo from "@/public/images/vssc-logo.png";
 
 // Set once the real "Ask a Librarian" destination is shared — when present,
 // the link opens externally in a new tab instead of the internal page.
@@ -14,22 +13,18 @@ export function SiteFooter() {
           {/* Left: brand */}
           <div className="flex items-center gap-3">
             <Image
-              src={vsscLogo}
+              src="/vssc-new-logo.png"
               alt="VSSC"
-              width={44}
-              height={44}
+              width={80}
+              height={80}
               className="object-contain"
             />
-            <div className="flex flex-col leading-tight text-left">
-              <span className="font-semibold text-sm text-foreground">SPACE SCHOLAR</span>
-              <span className="text-xs text-muted-foreground">Library Knowledge Repository</span>
-            </div>
           </div>
 
           {/* Centre: copyright + quick links */}
           <div className="text-center">
             <p className="text-sm font-bold text-foreground tracking-tight">
-              SPACE SCHOLAR &copy; 2026
+              Intelligent Library Information System (ILIS) &copy; 2026
             </p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               An initiative by Library &amp; Information Resource Division, VSSC
@@ -78,9 +73,6 @@ export function SiteFooter() {
 
           {/* Right: DUK partner logo */}
           <div className="flex flex-col items-center sm:items-end gap-1">
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              A partnership in innovation
-            </span>
             <Image
               src="/images/duk-logo.png"
               alt="Digital University Kerala"
