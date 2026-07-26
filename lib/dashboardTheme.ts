@@ -1,5 +1,3 @@
-
-
 export type StatusKey =
   | "completed"
   | "partial"
@@ -13,12 +11,20 @@ export interface StatusColor {
   bg: string;
   pillBg: string;
   pillText: string;
+  /** Actual hex value — needed for SVG stroke/fill where Tailwind classes don't apply. */
+  hex: string;
 }
 
 export type StatusColorMap = {
   [K in StatusKey]: StatusColor;
 };
 
+/**
+ * Single source of truth for status colors across the dashboard (donut, KPI
+ * cards, progress segments, table badges). Every component should read from
+ * here rather than hard-coding its own shade — previously the donut, the
+ * progress bar and the KPI cards each picked a different blue for "partial".
+ */
 export const STATUS_COLORS: StatusColorMap = {
   completed: {
     dot: "bg-leaf",
@@ -26,6 +32,7 @@ export const STATUS_COLORS: StatusColorMap = {
     bg: "bg-leaf",
     pillBg: "bg-leaf-soft",
     pillText: "text-leaf",
+    hex: "#168b72",
   },
   partial: {
     dot: "bg-peacock/60",
@@ -33,6 +40,7 @@ export const STATUS_COLORS: StatusColorMap = {
     bg: "bg-peacock/60",
     pillBg: "bg-peacock-soft",
     pillText: "text-peacock-deep",
+    hex: "#7dd3ef",
   },
   processing: {
     dot: "bg-peacock",
@@ -40,6 +48,7 @@ export const STATUS_COLORS: StatusColorMap = {
     bg: "bg-peacock",
     pillBg: "bg-peacock-soft",
     pillText: "text-peacock-deep",
+    hex: "#079ed2",
   },
   pending: {
     dot: "bg-turmeric",
@@ -47,6 +56,7 @@ export const STATUS_COLORS: StatusColorMap = {
     bg: "bg-turmeric",
     pillBg: "bg-amber-100/70",
     pillText: "text-amber-800",
+    hex: "#f5c44e",
   },
   failed: {
     dot: "bg-rose-500",
@@ -54,74 +64,28 @@ export const STATUS_COLORS: StatusColorMap = {
     bg: "bg-rose-500",
     pillBg: "bg-rose-100/70",
     pillText: "text-rose-800",
+    hex: "#e65b8d",
   },
 };
 
+/** Maps the raw document status values returned by the API onto the canonical StatusKey palette above. */
+export const DOCUMENT_STATUS_TO_KEY: Record<string, StatusKey> = {
+  COMPLETED: "completed",
+  PENDING: "pending",
+  INPROGRESS: "processing",
+  FAILED: "failed",
+};
 
-export const CARD_GRADIENTS = {
-  teal:     "bg-gradient-to-br from-sky-300 via-sky-200 to-cyan-100",
-  amber:    "bg-gradient-to-br from-amber-300 via-amber-200 to-yellow-100",
-  blue:     "bg-gradient-to-br from-indigo-300 via-indigo-200 to-blue-100",
-  rose:     "bg-gradient-to-br from-rose-300 via-pink-200 to-pink-100",
-  mint:     "bg-gradient-to-br from-emerald-300 via-emerald-200 to-teal-100",
-  lavender: "bg-gradient-to-br from-indigo-300 via-violet-200 to-purple-100",
-  cream:    "bg-gradient-to-br from-orange-200 via-amber-100 to-stone-100",
-  soft:     "bg-gradient-to-br from-stone-100 via-stone-50 to-stone-200",
-} as const;
+/** Subtle page-level wash — sections themselves are plain white cards so they read distinctly against it. */
+export const PAGE_WASH =
+  "bg-gradient-to-br from-saffron-soft/50 via-white to-peacock-soft/40";
 
-export const PAGE_GRADIENT =
-  "bg-gradient-to-br from-indigo-50 via-orange-50 to-sky-50";
-
-const ORB_PALETTE = [
-  {
-    grad: "bg-gradient-to-br from-sky-300 to-sky-600",
-    halo: "shadow-[0_0_18px_rgba(7,158,210,0.35)]",
-    text: "text-white",
-  },
-  {
-    grad: "bg-gradient-to-br from-rose-200 to-rose-400",
-    halo: "shadow-[0_0_14px_rgba(248,113,113,0.30)]",
-    text: "text-white",
-  },
-  {
-    grad: "bg-gradient-to-br from-indigo-300 to-indigo-500",
-    halo: "shadow-[0_0_14px_rgba(51,45,125,0.30)]",
-    text: "text-white",
-  },
-  {
-    grad: "bg-gradient-to-br from-orange-200 to-orange-400",
-    halo: "shadow-[0_0_12px_rgba(244,122,31,0.30)]",
-    text: "text-white",
-  },
-  {
-    grad: "bg-gradient-to-br from-amber-200 to-amber-400",
-    halo: "shadow-[0_0_12px_rgba(245,196,78,0.30)]",
-    text: "text-amber-900",
-  },
-  {
-    grad: "bg-gradient-to-br from-emerald-300 to-emerald-500",
-    halo: "shadow-[0_0_12px_rgba(22,139,114,0.30)]",
-    text: "text-white",
-  },
-];
-
-function hashCode(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h << 5) - h + s.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
-export function getOrbColors(name: string) {
-  return ORB_PALETTE[hashCode(name) % ORB_PALETTE.length];
-}
-
-export function getOrbSize(value: number, max: number): number {
-  const minPx = 60;
-  const maxPx = 110;
-  if (max <= 0) return minPx;
-  const ratio = Math.min(1, value / max);
-  return Math.round(minPx + (maxPx - minPx) * ratio);
-}
+/** Fixed, ordered categorical palette for "by content type" breakdowns — cycled by sorted index, never by name hash, so colors stay stable and legible. */
+export const CONTENT_TYPE_PALETTE = [
+  { bar: "bg-peacock", chip: "bg-peacock-soft text-peacock-deep" },
+  { bar: "bg-saffron", chip: "bg-saffron-soft text-saffron-deep" },
+  { bar: "bg-leaf", chip: "bg-leaf-soft text-leaf" },
+  { bar: "bg-turmeric", chip: "bg-amber-100/70 text-amber-800" },
+  { bar: "bg-primary", chip: "bg-indigo-50 text-primary" },
+  { bar: "bg-rose-400", chip: "bg-rose-100/70 text-rose-700" },
+] as const;

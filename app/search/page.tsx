@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   History,
   Search as SearchIcon,
@@ -31,6 +30,11 @@ import {
 } from "@/lib/utils/exportResults";
 
 type SortKey = "relevance" | "newest" | "oldest" | "title";
+
+const AI_SAMPLE_PROMPTS = [
+  "Benefits of regenerative cooling in liquid rocket engine?",
+  "What is crew module?",
+];
 
 function sortResults(items: any[], sortKey: SortKey) {
   if (sortKey === "relevance") return items;
@@ -125,6 +129,15 @@ function SearchPageInner() {
       )
     );
     setDocTypes(uniqueDocTypes as string[]);
+  }, [allResults]);
+
+  const docTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allResults.forEach((item) => {
+      const type = item._source?.metadata?.doc_content_type;
+      if (type) counts[type] = (counts[type] || 0) + 1;
+    });
+    return counts;
   }, [allResults]);
 
   const years = Array.from(
@@ -375,6 +388,19 @@ function SearchPageInner() {
           <p className="mt-3 text-xs text-white/75">
             Describe a topic in everyday language — LIA finds conceptually related records, not just keyword matches.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-white/60">Try a sample:</span>
+            {AI_SAMPLE_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => runTerm(prompt)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium text-white bg-white/10 border border-white/20 hover:bg-white/20 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -383,146 +409,147 @@ function SearchPageInner() {
           <div className="container mx-auto px-4 py-6 flex gap-6">
 
             {showAside && (
-            <aside className="w-72 hidden md:block space-y-4">
+              <aside className="w-72 hidden md:block space-y-4">
 
-              {showRefine && (
-              <div className="bg-white border border-border rounded-2xl overflow-hidden sticky top-6 shadow-sm">
-                <div className="px-4 py-3.5 flex items-center justify-between gap-2 bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-peacock-deep" />
-                    </div>
-                    <h2 className="text-sm font-semibold text-foreground">Refine Results</h2>
-                  </div>
-                  {hasActiveFilters && (
-                    <button onClick={clearFilters} className="text-[11px] font-semibold text-saffron-deep hover:underline">
-                      Clear all
-                    </button>
-                  )}
-                </div>
-
-                <div className="p-4 space-y-4">
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-                      <FileType className="w-3.5 h-3.5 text-muted-foreground" />
-                      Document Type
-                    </label>
-                    <div className="space-y-1.5">
-                      {docTypes.map((type) => (
-                        <label key={type} className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={tempDocTypes.has(type)}
-                            onChange={() => toggleTempDocType(type)}
-                            className="w-4 h-4 accent-peacock cursor-pointer"
-                          />
-                          {type}
-                        </label>
-                      ))}
-                      {docTypes.length === 0 && (
-                        <p className="text-xs text-muted-foreground">No results yet.</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
-                      <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-                      Published Year
-                    </label>
-                    <div className="flex gap-2 items-center">
-                      <select
-                        className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
-                        value={tempYearFrom}
-                        onChange={(e) => setTempYearFrom(e.target.value)}
-                      >
-                        <option value="">From</option>
-                        {years.map((year) => (
-                          <option key={String(year)} value={String(year)}>{year}</option>
-                        ))}
-                      </select>
-                      <span className="text-muted-foreground text-sm">—</span>
-                      <select
-                        className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
-                        value={tempYearTo}
-                        onChange={(e) => setTempYearTo(e.target.value)}
-                      >
-                        <option value="">To</option>
-                        {years.map((year) => (
-                          <option key={String(year)} value={String(year)}>{year}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    className="w-full bg-gradient-to-r from-saffron to-peacock-deep hover:opacity-90 text-white rounded-lg shadow-sm"
-                    onClick={applyFilters}
-                  >
-                    Apply filters
-                  </Button>
-
-                  {hasActiveFilters && (
-                    <div className="flex flex-wrap items-center gap-2 pt-1">
-                      {Array.from(selectedDocTypes).map((type) => (
-                        <span key={type} className="inline-flex items-center gap-1 px-2.5 py-1 bg-peacock-soft border border-peacock/20 text-peacock-deep text-xs rounded-full">
-                          <FileType className="w-3 h-3" />
-                          {type}
-                          <button onClick={() => removeDocTypeFilter(type)} className="ml-0.5 hover:bg-peacock/10 rounded-full p-0.5">
-                            <X className="w-2.5 h-2.5" />
-                          </button>
-                        </span>
-                      ))}
-                      {(yearFrom || yearTo) && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-saffron-soft border border-saffron/20 text-saffron-deep text-xs rounded-full">
-                          <Calendar className="w-3 h-3" />
-                          {yearFrom || "…"} – {yearTo || "…"}
-                          <button onClick={removeYearFilter} className="ml-0.5 hover:bg-saffron/10 rounded-full p-0.5">
-                            <X className="w-2.5 h-2.5" />
-                          </button>
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-              )}
-
-              {recentSearches.length > 0 && (
-                <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
-                  <div className="px-4 py-3.5 flex items-center justify-between bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
-                    <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground">
-                      <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
-                        <History className="w-3.5 h-3.5 text-peacock-deep" />
-                      </div>
-                      Recent Searches
-                    </h2>
-                    <button onClick={handleClearAllSearches} className="p-1.5 hover:bg-muted rounded-md transition-colors group" title="Clear all">
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-rose-500" />
-                    </button>
-                  </div>
-
-                  <ScrollArea className="max-h-[40vh]">
-                    <div className="p-2 space-y-1">
-                      {recentSearches.map((search, index) => (
-                        <div key={index} className="group flex items-center rounded-xl border border-transparent hover:border-border hover:bg-muted/60 transition-all duration-200">
-                          <button className="flex-1 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground/80 hover:text-peacock-deep text-left truncate min-w-0" onClick={() => runTerm(search)}>
-                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-peacock-soft group-hover:text-peacock-deep transition-colors flex-shrink-0">
-                              <SearchIcon className="w-3.5 h-3.5" />
-                            </span>
-                            <span className="truncate">{search}</span>
-                          </button>
-                          <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 opacity-0 group-hover:opacity-100 hover:bg-rose-50 rounded-md transition-all" title="Remove">
-                            <X className="h-3 w-3 text-muted-foreground hover:text-rose-500" />
-                          </button>
+                {showRefine && (
+                  <div className="bg-white border border-border rounded-2xl overflow-hidden sticky top-6 shadow-sm">
+                    <div className="px-4 py-3.5 flex items-center justify-between gap-2 bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
+                          <SlidersHorizontal className="w-3.5 h-3.5 text-peacock-deep" />
                         </div>
-                      ))}
+                        <h2 className="text-sm font-semibold text-foreground">Refine Results</h2>
+                      </div>
+                      {hasActiveFilters && (
+                        <button onClick={clearFilters} className="text-[11px] font-semibold text-saffron-deep hover:underline">
+                          Clear all
+                        </button>
+                      )}
                     </div>
-                  </ScrollArea>
-                </div>
-              )}
-            </aside>
+
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
+                          <FileType className="w-3.5 h-3.5 text-muted-foreground" />
+                          Document Type
+                        </label>
+                        <div className="space-y-1.5">
+                          {docTypes.map((type) => (
+                            <label key={type} className="flex items-center gap-2 text-sm text-foreground/80 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={tempDocTypes.has(type)}
+                                onChange={() => toggleTempDocType(type)}
+                                className="w-4 h-4 accent-peacock cursor-pointer"
+                              />
+                              <span className="flex-1">{type}</span>
+                              <span className="text-xs font-medium text-muted-foreground">{docTypeCounts[type] ?? 0}</span>
+                            </label>
+                          ))}
+                          {docTypes.length === 0 && (
+                            <p className="text-xs text-muted-foreground">No results yet.</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-1.5 mb-2">
+                          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                          Published Year
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <select
+                            className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
+                            value={tempYearFrom}
+                            onChange={(e) => setTempYearFrom(e.target.value)}
+                          >
+                            <option value="">From</option>
+                            {years.map((year) => (
+                              <option key={String(year)} value={String(year)}>{year}</option>
+                            ))}
+                          </select>
+                          <span className="text-muted-foreground text-sm">—</span>
+                          <select
+                            className="flex-1 px-2.5 py-2 border-2 border-border rounded-lg text-sm text-foreground focus:border-peacock focus:outline-none bg-white transition-colors"
+                            value={tempYearTo}
+                            onChange={(e) => setTempYearTo(e.target.value)}
+                          >
+                            <option value="">To</option>
+                            {years.map((year) => (
+                              <option key={String(year)} value={String(year)}>{year}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="w-full bg-gradient-to-r from-saffron to-peacock-deep hover:opacity-90 text-white rounded-lg shadow-sm"
+                        onClick={applyFilters}
+                      >
+                        Apply filters
+                      </Button>
+
+                      {hasActiveFilters && (
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          {Array.from(selectedDocTypes).map((type) => (
+                            <span key={type} className="inline-flex items-center gap-1 px-2.5 py-1 bg-peacock-soft border border-peacock/20 text-peacock-deep text-xs rounded-full">
+                              <FileType className="w-3 h-3" />
+                              {type}
+                              <button onClick={() => removeDocTypeFilter(type)} className="ml-0.5 hover:bg-peacock/10 rounded-full p-0.5">
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </span>
+                          ))}
+                          {(yearFrom || yearTo) && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-saffron-soft border border-saffron/20 text-saffron-deep text-xs rounded-full">
+                              <Calendar className="w-3 h-3" />
+                              {yearFrom || "…"} – {yearTo || "…"}
+                              <button onClick={removeYearFilter} className="ml-0.5 hover:bg-saffron/10 rounded-full p-0.5">
+                                <X className="w-2.5 h-2.5" />
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {recentSearches.length > 0 && (
+                  <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+                    <div className="px-4 py-3.5 flex items-center justify-between bg-gradient-to-r from-peacock-soft to-saffron-soft border-b border-border">
+                      <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                        <div className="w-7 h-7 rounded-lg bg-white ring-1 ring-border flex items-center justify-center">
+                          <History className="w-3.5 h-3.5 text-peacock-deep" />
+                        </div>
+                        Recent Searches
+                      </h2>
+                      <button onClick={handleClearAllSearches} className="p-1.5 hover:bg-muted rounded-md transition-colors group" title="Clear all">
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground group-hover:text-rose-500" />
+                      </button>
+                    </div>
+
+                    <div className="max-h-[40vh] overflow-y-auto">
+                      <div className="p-2 space-y-1">
+                        {recentSearches.map((search, index) => (
+                          <div key={index} className="group flex items-center w-full rounded-xl border border-transparent hover:border-border hover:bg-muted/60 transition-all duration-200">
+                            <button className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground/80 hover:text-peacock-deep text-left" onClick={() => runTerm(search)} title={search}>
+                              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-peacock-soft group-hover:text-peacock-deep transition-colors flex-shrink-0">
+                                <SearchIcon className="w-3.5 h-3.5" />
+                              </span>
+                              <span className="flex-1 min-w-0 truncate">{search}</span>
+                            </button>
+                            <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 flex-shrink-0 hover:bg-rose-50 rounded-md transition-all" title="Remove">
+                              <X className="h-3 w-3 text-muted-foreground hover:text-rose-500" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </aside>
             )}
 
             <main className="flex-1 space-y-4 min-w-0">
@@ -612,19 +639,16 @@ function SearchPageInner() {
                   <p className="text-xs text-rose-500 mt-1">Please try again in a moment.</p>
                 </div>
               ) : hasSearched && isLoading ? (
-                <div className="mt-8 w-full flex flex-col items-center justify-center py-12 select-none">
-                  <img
-                    src="/images/searching-docs.svg"
-                    alt="Searching documents…"
-                    className="w-[320px] max-w-full h-auto"
-                  />
-                  <p className="mt-2 text-sm font-semibold tracking-wide bg-gradient-to-r from-saffron-deep to-peacock-deep bg-clip-text text-transparent">
-                    Searching through the cosmos<span className="ss-dots" />
-                  </p>
-                  <style dangerouslySetInnerHTML={{ __html: `
-                    .ss-dots::after { content: ""; animation: ssDots 1.4s steps(4,end) infinite; }
-                    @keyframes ssDots { 0%{content:"";} 25%{content:".";} 50%{content:"..";} 75%,100%{content:"...";} }
-                  ` }} />
+                <div className="mt-4 w-full flex items-start justify-center py-6 select-none">
+                  <div className="loader-card">
+                    <div className="loader-mandala" aria-hidden="true">
+                      <span className="loader-core" />
+                    </div>
+                    <strong className="block text-[0.94rem] text-foreground">
+                      Mapping your query across the knowledge universe...
+                    </strong>
+
+                  </div>
                 </div>
               ) : (
                 <>
@@ -654,11 +678,10 @@ function SearchPageInner() {
                             )}
                             <button
                               onClick={() => setCurrentPage(p)}
-                              className={`w-9 h-9 rounded-lg text-sm font-semibold ${
-                                p === safePage
+                              className={`w-9 h-9 rounded-lg text-sm font-semibold ${p === safePage
                                   ? "bg-primary text-white"
                                   : "border border-border bg-white text-foreground/70 hover:bg-muted"
-                              }`}
+                                }`}
                             >
                               {p}
                             </button>

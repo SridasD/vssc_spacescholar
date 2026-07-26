@@ -25,6 +25,7 @@ const searchParams = request.nextUrl.searchParams;
 const page = parseInt(searchParams.get("page") || "1", 10);
 const limit = parseInt(searchParams.get("limit") || "10", 10);
 const rawStatus = searchParams.get("status");
+const search = (searchParams.get("search") || "").trim().slice(0, 200) || null;
 
 if (
   !Number.isFinite(page) || page < 1 || page > MAX_PAGE ||
@@ -49,7 +50,7 @@ if (
       status = normalized === "ALL" ? null : normalized;
     }
 
-    const documentsResponse = await getDocuments(page, limit, { status });
+    const documentsResponse = await getDocuments(page, limit, { status, search });
 
     return NextResponse.json({ ...documentsResponse });
   } catch (error) {

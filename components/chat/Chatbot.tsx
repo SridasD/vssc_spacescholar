@@ -7,6 +7,7 @@ import {
     ZoomIn,
     Maximize2,
     Minimize2,
+    Minus,
     Sparkles,
     User,
 } from "lucide-react";
@@ -139,6 +140,7 @@ export default function Chatbot({
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [size, setSize] = useState<Size>("large");
+    const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState<Position>(() => {
         const initialY =
             window.innerHeight - sizeConfig.large.minHeight - 80;
@@ -165,7 +167,11 @@ export default function Chatbot({
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const isDragging = useRef(false);
+    const dragArmed = useRef(false);
+    const dragStart = useRef<Position>({ x: 0, y: 0 });
     const dragOffset = useRef<Position>({ x: 0, y: 0 });
+    const [isDraggingState, setIsDraggingState] = useState(false);
+    const DRAG_THRESHOLD = 4;
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -244,7 +250,12 @@ export default function Chatbot({
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
-            isDragging.current = true;
+            const target = e.target as HTMLElement;
+            if (target.closest("button, a, input, textarea, select")) return;
+
+            e.preventDefault();
+            dragArmed.current = true;
+            dragStart.current = { x: e.clientX, y: e.clientY };
             dragOffset.current = {
                 x: e.clientX - position.x,
                 y: e.clientY - position.y,
@@ -255,7 +266,18 @@ export default function Chatbot({
 
     const handleMouseMove = useCallback(
         (e: MouseEvent) => {
-            if (!isDragging.current) return;
+            if (!dragArmed.current) return;
+            e.preventDefault();
+
+            if (!isDragging.current) {
+                const moved = Math.hypot(
+                    e.clientX - dragStart.current.x,
+                    e.clientY - dragStart.current.y
+                );
+                if (moved < DRAG_THRESHOLD) return;
+                isDragging.current = true;
+                setIsDraggingState(true);
+            }
 
             const currentConfig = sizeConfig[size];
             const newX = Math.min(
@@ -275,7 +297,11 @@ export default function Chatbot({
     );
 
     const handleMouseUp = useCallback(() => {
-        isDragging.current = false;
+        dragArmed.current = false;
+        if (isDragging.current) {
+            isDragging.current = false;
+            setIsDraggingState(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -358,14 +384,15 @@ export default function Chatbot({
     return (
         <div
             data-doc-key={docKey}
-            className={`chatbox-window fixed z-50 ${sizeConfig[size].width} ${sizeConfig[size].height}
+            className={`chatbox-window fixed z-50 ${isMinimized ? "w-80 h-auto" : `${sizeConfig[size].width} ${sizeConfig[size].height}`}
                         bg-white border border-slate-200 rounded-2xl overflow-hidden
                         shadow-[0_1px_0_rgba(13,20,36,0.02),0_16px_36px_-16px_rgba(13,20,36,0.18)]
-                        transition-all duration-300 flex flex-col`}
+                        flex flex-col
+                        ${isDraggingState ? "select-none" : "transition-all duration-300"}`}
             style={{
                 top: `${position.y}px`,
                 left: `${position.x}px`,
-                cursor: isDragging.current ? "grabbing" : "grab",
+                cursor: isDraggingState ? "grabbing" : "grab",
             }}
         >
             {/* Violet color rail — matches IntelliDoc button identity */}
@@ -434,7 +461,27 @@ export default function Chatbot({
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
-                                    onClick={toggleSize}
+                                    onClick={() => setIsMinimized((prev) => !prev)}
+                                    className="cursor-pointer p-1.5 hover:bg-sky-100 rounded-md
+                                               text-slate-500 hover:text-sky-700 transition-colors"
+                                >
+                                    <Minus className="h-3.5 w-3.5" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{isMinimized ? "Restore" : "Minimize"}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => {
+                                        setIsMinimized(false);
+                                        toggleSize();
+                                    }}
                                     className="cursor-pointer p-1.5 hover:bg-sky-100 rounded-md
                                                text-slate-500 hover:text-sky-700 transition-colors"
                                 >
@@ -453,7 +500,7 @@ export default function Chatbot({
                                         ? "Enlarge"
                                         : size === "large"
                                         ? "Maximize"
-                                        : "Minimize"}
+                                        : "Shrink to normal"}
                                 </p>
                             </TooltipContent>
                         </Tooltip>
@@ -469,6 +516,8 @@ export default function Chatbot({
                 </div>
             </div>
 
+            {!isMinimized && (
+            <>
             {/* ============ DISCLAIMER ============ */}
             <div className="px-5 py-2 text-[11px] leading-snug text-amber-800 bg-amber-50 border-b border-amber-200">
                 This is an AI-generated summary for quick understanding, it may not include every
@@ -615,6 +664,8 @@ export default function Chatbot({
                     </button>
                 </div>
             </div>
+            </>
+            )}
         </div>
     );
 }

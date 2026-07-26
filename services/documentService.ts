@@ -25,7 +25,15 @@ export interface GetDocumentsFilters {
   contentTypeId?: number | null;
   startDate?: string | null;
   endDate?: string | null;
+  /** Free-text match against title / author / accession no / biblio number. */
+  search?: string | null;
 }
+
+// Upper bound on how many rows we'll pull from the DB function to search over in
+// memory. The stored function has no search parameter of its own, so a text
+// search widens the fetch to this candidate set, filters in Node, then paginates
+// the filtered result — avoiding a hand-written duplicate of the function's SQL.
+const SEARCH_CANDIDATE_LIMIT = 2000;
 
 /**
  * Fetch paginated document list from the database, with optional filters.
@@ -42,8 +50,49 @@ export async function getDocuments(
   const contentTypeId = filters.contentTypeId ?? null;
   const startDate = filters.startDate ?? null;
   const endDate = filters.endDate ?? null;
+  const search = filters.search?.trim() || null;
 
   try {
+    if (search) {
+      // Pull a wide candidate set (existing filters still applied server-side),
+      // then match the search term client-side and paginate the filtered set.
+      const candidatesQuery = `
+        SELECT * FROM space_scholar.get_uploaded_documents_detailswith_limit_and_offset(
+          p_limit := $1,
+          p_offset := 0,
+          p_content_type_id := $2,
+          p_status := $3,
+          p_start_date := $4,
+          p_end_date := $5
+        )
+      `;
+      const candidatesResult = await db.query(candidatesQuery, [
+        SEARCH_CANDIDATE_LIMIT,
+        contentTypeId,
+        status,
+        startDate,
+        endDate,
+      ]);
+
+      const needle = search.toLowerCase();
+      const matches = candidatesResult.rows.filter((doc: Document) =>
+        [doc.doc_title, doc.author, doc.accession_no, doc.biblio_number]
+          .filter(Boolean)
+          .some((field) => String(field).toLowerCase().includes(needle))
+      );
+
+      const totalCount = matches.length;
+      const totalPages = Math.ceil(totalCount / limit) || 1;
+
+      return {
+        documents: matches.slice(offset, offset + limit),
+        totalCount,
+        page,
+        limit,
+        totalPages,
+      };
+    }
+
     // Filtered count — must apply the SAME filters as the data query
     const countQuery = `
       SELECT COUNT(*)::int AS count

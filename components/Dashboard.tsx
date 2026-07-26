@@ -1,200 +1,222 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { FileStack, CheckCircle2, RefreshCw, Clock, AlertTriangle, LayoutGrid, UploadCloud, AlertCircle } from "lucide-react";
 import KpiCard from "@/components/KpiCard";
 import StatusDonut from "@/components/StatusDonut";
-import ProgressBar from "@/components/ProgressBar";
-import ContentStatsTable from "@/components/ContentStatsTable";
-import DocumentTable from "@/components/DocumentTable";
+import ContentTypeBreakdown from "@/components/ContentTypeBreakdown";
+import DocumentTable, { FocusSignal } from "@/components/DocumentTable";
 import Footer from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ContentStat } from "@/lib/types/document.types";
-import {
-  CARD_GRADIENTS,
-  PAGE_GRADIENT,
-  STATUS_COLORS,
-} from "@/lib/dashboardTheme";
+import { PAGE_WASH, STATUS_COLORS } from "@/lib/dashboardTheme";
+
+interface Stats {
+  totalDocumentCount: number;
+  totalPending: number;
+  totalProcessing: number;
+  totalPartiallyCompleted: number;
+  totalCompleted: number;
+  totalFailed: number;
+  overallCompletionRate: number;
+  overallFailureRate: number;
+}
+
+const EMPTY_STATS: Stats = {
+  totalDocumentCount: 0,
+  totalPending: 0,
+  totalProcessing: 0,
+  totalPartiallyCompleted: 0,
+  totalCompleted: 0,
+  totalFailed: 0,
+  overallCompletionRate: 0,
+  overallFailureRate: 0,
+};
+
+const toTitleCase = (str: string) =>
+  str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({
-    totalDocumentCount: 0,
-    totalPending: 0,
-    totalProcessing: 0,
-    totalPartiallyCompleted: 0,
-    totalCompleted: 0,
-    totalFailed: 0,
-    overallCompletionRate: 0,
-    overallFailureRate: 0,
-  });
+  const [stats, setStats] = useState<Stats>(EMPTY_STATS);
   const [contentStats, setContentStats] = useState<ContentStat[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [focusSignal, setFocusSignal] = useState<FocusSignal | null>(null);
 
-  const toTitleCase = (str: string) =>
-    str.replace(
-      /\w\S*/g,
-      (txt) =>
-        txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
-    );
+  const uploadsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("/api/documents");
-        if (!response.ok) throw new Error("Failed to fetch stats");
-        const data = await response.json();
+  const fetchStats = useCallback(async (signal?: AbortSignal) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/documents", { signal });
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      const data = await response.json();
 
-        setStats({
-          totalDocumentCount: parseInt(data.overallStats.total_document_count),
-          totalPending: parseInt(data.overallStats.total_pending),
-          totalProcessing: parseInt(data.overallStats.total_processing),
-          totalPartiallyCompleted: parseInt(data.overallStats.total_partially_completed),
-          totalCompleted: parseInt(data.overallStats.total_completed),
-          totalFailed: parseInt(data.overallStats.total_failed),
-          overallCompletionRate: parseFloat(data.overallStats.overall_completion_rate),
-          overallFailureRate: parseFloat(data.overallStats.overall_failure_rate),
-        });
+      setStats({
+        totalDocumentCount: parseInt(data.overallStats.total_document_count),
+        totalPending: parseInt(data.overallStats.total_pending),
+        totalProcessing: parseInt(data.overallStats.total_processing),
+        totalPartiallyCompleted: parseInt(data.overallStats.total_partially_completed),
+        totalCompleted: parseInt(data.overallStats.total_completed),
+        totalFailed: parseInt(data.overallStats.total_failed),
+        overallCompletionRate: parseFloat(data.overallStats.overall_completion_rate),
+        overallFailureRate: parseFloat(data.overallStats.overall_failure_rate),
+      });
 
-        setContentStats(
-          data.contentStats.map((stat: any) => ({
-            contentType: toTitleCase(stat.content_type),
-            totalDocuments: parseInt(stat.total_documents),
-            pendingCount: parseInt(stat.pending_count),
-            processingCount: parseInt(stat.processing_count),
-            completedCount: parseInt(stat.completed_count),
-            failedCount: parseInt(stat.failed_count),
-            percentageCompleted: parseFloat(stat.percentage_completed),
-            partiallyCompleted: parseFloat(stat.partially_completed),
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
-    };
-
-    fetchStats();
+      setContentStats(
+        data.contentStats.map((stat: any) => ({
+          contentType: toTitleCase(stat.content_type),
+          totalDocuments: parseInt(stat.total_documents),
+          pendingCount: parseInt(stat.pending_count),
+          processingCount: parseInt(stat.processing_count),
+          completedCount: parseInt(stat.completed_count),
+          failedCount: parseInt(stat.failed_count),
+          percentageCompleted: parseFloat(stat.percentage_completed),
+          partiallyCompleted: parseFloat(stat.partially_completed),
+        }))
+      );
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      console.error("Error fetching stats:", err);
+      setError("Couldn't load dashboard statistics.");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchStats(controller.signal);
+    return () => controller.abort();
+  }, [fetchStats]);
+
+  const jumpToFailed = () => {
+    setFocusSignal({ status: "FAILED", nonce: Date.now() });
+    uploadsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="mt-8 space-y-3.5">
-      <div className={`relative rounded-3xl p-6 sm:p-8 overflow-hidden ${PAGE_GRADIENT}`}>
-        {/* Decorative sparkles */}
-        <span className="absolute top-7 right-20 w-1 h-1 rounded-full bg-peacock opacity-40" />
-        <span className="absolute top-14 right-56 w-[3px] h-[3px] rounded-full bg-peacock opacity-30" />
-        <span className="absolute top-20 right-80 w-[3px] h-[3px] rounded-full bg-turmeric opacity-50" />
-        <span className="absolute top-40 right-8 w-1 h-1 rounded-full bg-peacock opacity-35" />
-
-        {/* HERO ROW: donut + actionable KPI stack */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mb-5">
-          {/* Donut card */}
-          <motion.div
-            className={`relative rounded-2xl border border-white/70 backdrop-blur-sm p-7 ${CARD_GRADIENTS.teal}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+    <div className={`mt-8 space-y-5 -mx-5 px-5 sm:-mx-8 sm:px-8 lg:-mx-12 lg:px-12 py-6 rounded-3xl ${PAGE_WASH}`}>
+      {error && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <span className="inline-flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            {error}
+          </span>
+          <button
+            onClick={() => fetchStats()}
+            className="font-semibold underline underline-offset-2 hover:text-rose-900"
           >
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground m-0">
-                Pipeline status
-              </p>
+            Retry
+          </button>
+        </div>
+      )}
 
-            </div>
-
-            <div className="flex items-center gap-7">
-              <StatusDonut
-                total={stats.totalDocumentCount}
-                completed={stats.totalCompleted}
-                partial={stats.totalPartiallyCompleted}
-                processing={stats.totalProcessing}
-                pending={stats.totalPending}
-                failed={stats.totalFailed}
-                completionRate={stats.overallCompletionRate}
-              />
-              <div className="flex-1 flex flex-col gap-3 text-[15px]">
-                <LegendRow label="Completed" value={stats.totalCompleted} dot={STATUS_COLORS.completed.dot} />
-                <LegendRow label="Partial" value={stats.totalPartiallyCompleted} dot={STATUS_COLORS.partial.dot} />
-                <LegendRow label="Processing" value={stats.totalProcessing} dot={STATUS_COLORS.processing.dot} />
-                <LegendRow label="Pending" value={stats.totalPending} dot={STATUS_COLORS.pending.dot} />
-                <LegendRow label="Failed" value={stats.totalFailed} dot={STATUS_COLORS.failed.dot} pulse />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Actionable KPI stack */}
-          <div className="grid grid-rows-3 gap-4">
-            <KpiCard
-              title="Pending"
-              value={stats.totalPending}
-              gradient={CARD_GRADIENTS.amber}
-              labelClass="text-amber-800"
-              valueClass="text-amber-900"
-              dotClass="bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
-            />
-            <KpiCard
-              title="Processing"
-              value={stats.totalProcessing}
-              gradient={CARD_GRADIENTS.blue}
-              labelClass="text-blue-800"
-              valueClass="text-blue-900"
-              dotClass="bg-blue-400"
-            />
+      {/* ============ KPI ROW ============ */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-[104px] rounded-xl" />
+          ))
+        ) : (
+          <>
+            <KpiCard title="Total documents" value={stats.totalDocumentCount} tone="neutral" icon={<FileStack className="w-4 h-4" />} />
+            <KpiCard title="Completed" value={stats.totalCompleted} tone="completed" icon={<CheckCircle2 className="w-4 h-4" />} />
+            <KpiCard title="Processing" value={stats.totalProcessing} tone="processing" icon={<RefreshCw className="w-4 h-4" />} />
+            <KpiCard title="Pending" value={stats.totalPending} tone="pending" icon={<Clock className="w-4 h-4" />} />
             <KpiCard
               title="Failed"
               value={stats.totalFailed}
-              gradient={CARD_GRADIENTS.rose}
-              labelClass="text-red-700"
-              valueClass="text-red-800"
-              dotClass="bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
-              pulseDot
-              hint={stats.totalFailed > 0 ? "→ retry" : undefined}
+              tone="failed"
+              icon={<AlertTriangle className="w-4 h-4" />}
+              hint={stats.totalFailed > 0 ? "View →" : undefined}
+              onClick={stats.totalFailed > 0 ? jumpToFailed : undefined}
             />
-          </div>
-        </div>
-
-        {/* SECONDARY KPI strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-          <KpiCard
-            title="Total documents"
-            value={stats.totalDocumentCount}
-            gradient={CARD_GRADIENTS.cream}
-            labelClass="text-muted-foreground"
-          />
-          <KpiCard
-            title="Completed"
-            value={stats.totalCompleted}
-            gradient={CARD_GRADIENTS.mint}
-            labelClass="text-emerald-800"
-            valueClass="text-emerald-900"
-          />
-          <KpiCard
-            title="Partially completed"
-            value={stats.totalPartiallyCompleted}
-            gradient={CARD_GRADIENTS.lavender}
-            labelClass="text-indigo-800"
-            valueClass="text-indigo-900"
-          />
-        </div>
-
-        {/* PROGRESS BAR */}
-        <div className="mb-5">
-          <ProgressBar stats={stats} />
-        </div>
-
-        {/* CONTENT TYPE ORBS */}
-        <div className="mb-5">
-          <ContentStatsTable contentStats={contentStats} />
-        </div>
+          </>
+        )}
       </div>
 
-      {/* RECENT UPLOADS */}
-      <div className={`rounded-3xl p-5 sm:p-6 ${PAGE_GRADIENT}`}>
-        <motion.h3
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="text-[22px] font-medium tracking-tight text-foreground mb-5"
-        >
-          Latest uploads
-        </motion.h3>
-        <DocumentTable limit={10} />
+      {/* ============ PIPELINE STATUS + BY CONTENT TYPE — side by side so wide screens don't leave each card half-empty ============ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-5 items-stretch">
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <LayoutGrid className="w-4 h-4 text-primary" />
+              Pipeline status
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-full flex items-center justify-center">
+            {isLoading ? (
+              <div className="flex items-center gap-8 w-full max-w-md">
+                <Skeleton className="w-[210px] h-[210px] rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-5 w-full" />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-center gap-10">
+                <StatusDonut
+                  total={stats.totalDocumentCount}
+                  completed={stats.totalCompleted}
+                  partial={stats.totalPartiallyCompleted}
+                  processing={stats.totalProcessing}
+                  pending={stats.totalPending}
+                  failed={stats.totalFailed}
+                  completionRate={stats.overallCompletionRate}
+                />
+                <div className="w-full sm:w-60 flex flex-col gap-2.5 text-[15px]">
+                  <LegendRow label="Completed" value={stats.totalCompleted} dot={STATUS_COLORS.completed.dot} />
+                  <LegendRow label="Partial" value={stats.totalPartiallyCompleted} dot={STATUS_COLORS.partial.dot} />
+                  <LegendRow label="Processing" value={stats.totalProcessing} dot={STATUS_COLORS.processing.dot} />
+                  <LegendRow label="Pending" value={stats.totalPending} dot={STATUS_COLORS.pending.dot} />
+                  <LegendRow label="Failed" value={stats.totalFailed} dot={STATUS_COLORS.failed.dot} pulse={stats.totalFailed > 0} />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <FileStack className="w-4 h-4 text-primary" />
+              By content type
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-9 w-full" />
+                ))}
+              </div>
+            ) : (
+              <ContentTypeBreakdown contentStats={contentStats} />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ============ RECENT UPLOADS ============ */}
+      <div ref={uploadsRef}>
+        <Card className="border-border scroll-mt-6">
+          <CardHeader className="pb-2">
+            <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <UploadCloud className="w-4 h-4 text-primary" />
+                Latest uploads
+              </CardTitle>
+            </motion.div>
+          </CardHeader>
+          <CardContent>
+            <DocumentTable limit={10} focusSignal={focusSignal} />
+          </CardContent>
+        </Card>
       </div>
 
       <Footer />

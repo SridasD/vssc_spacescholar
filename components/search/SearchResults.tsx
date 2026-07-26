@@ -28,8 +28,18 @@ export function SearchResults({
 
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Searching through the cosmos...
+      <div className="w-full flex items-start justify-center py-6 select-none">
+        <div className="loader-card">
+          <div className="loader-mandala" aria-hidden="true">
+            <span className="loader-core" />
+          </div>
+          <strong className="block text-[0.94rem] text-foreground">
+            Mapping your query across the knowledge universe...
+          </strong>
+          <span className="block mt-1.5 text-[0.78rem] text-muted-foreground">
+            The animated loader is designed to be informative, calm and unmistakably in progress.
+          </span>
+        </div>
       </div>
     );
   }

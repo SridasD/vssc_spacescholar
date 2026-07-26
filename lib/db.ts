@@ -33,8 +33,13 @@ pool.on('connect', () => {
 });
 
 pool.on('error', (err) => {
-  console.error('PostgreSQL connection error:', err);
-  process.exit(-1);
+  // An idle client in the pool hit a transient error (dropped connection,
+  // brief network blip, etc). This must NOT kill the process — that would take
+  // down the entire server for every user over one bad connection. `pg`
+  // automatically discards the broken client and opens a new one as needed;
+  // only the in-flight query on that client fails, and its caller already
+  // handles that via its own try/catch.
+  console.error('Unexpected error on idle PostgreSQL client:', err);
 });
 
 export async function query(text: string, params: any[] = []) {

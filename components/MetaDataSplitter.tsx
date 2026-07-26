@@ -6,6 +6,7 @@ import Papa from "papaparse";
 import JSZip from "jszip";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MetadataWorkflowSteps from "./MetadataWorkflowSteps";
 
 const normalizeKey = (k: string) => (k || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 
@@ -287,13 +288,15 @@ export default function DashboardBulkSplitter() {
     <>
       <ToastContainer position="top-right" autoClose={10000} />
 
+      <MetadataWorkflowSteps current={1} />
+
       <motion.h2
         className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-saffron-deep to-peacock-deep mb-6 w-[90%]"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Step 1: Data Split Engine
+        Data Split Engine
       </motion.h2>
 
 

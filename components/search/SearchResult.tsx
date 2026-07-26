@@ -254,7 +254,7 @@ export function SearchResult({
     <>
       <Card
         className={`relative w-full mb-3 overflow-hidden rounded-2xl
-                   bg-gradient-to-r ${badgeConfig.cardTint} border border-border
+                   bg-white border border-border
                    shadow-sm
                    transition-all duration-300 ease-out
                    hover:-translate-y-0.5 hover:border-primary/25
@@ -266,8 +266,8 @@ export function SearchResult({
         {/* ============ SINGLE COLUMN — everything aligned under the title ============ */}
         <CardContent className="p-6 md:p-7 flex flex-col gap-3.5 min-w-0">
 
-          {/* Header: collection badge + select checkbox (actions float top-right) */}
-          <div className="flex items-center gap-2.5 pr-28 sm:pr-48 md:pr-56">
+          {/* Header: collection badge + concept-match badge + restricted badge + select checkbox */}
+          <div className="flex items-center flex-wrap gap-2">
             <span
               className={`inline-flex items-center px-2.5 py-1 rounded border ${badgeConfig.color}
                           text-[10px] font-bold tracking-[0.12em] uppercase w-fit`}
@@ -276,20 +276,33 @@ export function SearchResult({
               {metadata?.doc_content_type || "Document"}
             </span>
 
+            {showExtras && relevancePct !== null && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-saffron/30 text-saffron-deep bg-saffron-soft text-[10px] font-bold tracking-[0.06em] uppercase w-fit">
+                {relevancePct}% concept match
+              </span>
+            )}
+
+            {metadata?.doc_content_type !== "Books" && isRestricted && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-300 text-rose-700 text-[10px] font-bold tracking-[0.1em] uppercase w-fit" title="This item is restricted">
+                <ShieldAlert className="h-3 w-3" />
+                Restricted
+              </span>
+            )}
+
             {showExtras && onToggleSelect && (
               <input
                 type="checkbox"
                 checked={selected}
                 onChange={() => onToggleSelect(String(document._id))}
                 aria-label="Select document for export"
-                className={`w-4 h-4 cursor-pointer rounded ${badgeConfig.accent}`}
+                className={`w-4 h-4 cursor-pointer rounded ml-auto ${badgeConfig.accent}`}
                 title="Select for export"
               />
             )}
           </div>
 
           {/* Title */}
-          <h3 className="text-[18px] md:text-[20px] leading-[1.3] tracking-[-0.005em] font-semibold text-foreground pr-28 sm:pr-48 md:pr-56 break-words">
+          <h3 className="text-[18px] md:text-[20px] leading-[1.3] tracking-[-0.005em] font-semibold text-foreground break-words">
             {metadata?.doc_title || "Untitled Document"}
           </h3>
 
@@ -304,7 +317,7 @@ export function SearchResult({
           {subjectsList.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {subjectsList.map((subject, index) => (
-                <span key={index} className="px-3 py-1 rounded-full bg-muted border border-border text-muted-foreground text-[13px]">
+                <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-full bg-peacock-soft border border-peacock/15 text-peacock-deep text-[12px] font-semibold">
                   {String(subject)}
                 </span>
               ))}
@@ -340,67 +353,45 @@ export function SearchResult({
               </div>
             )}
           </div>
-        </CardContent>
 
-        {metadata?.doc_content_type === "Books" ? null : isRestricted ? (
-          <div className="absolute top-4 right-4">
-            <div className="relative inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-rose-50 border border-rose-300 text-rose-700 text-[10px] font-bold tracking-[0.14em] uppercase animate-pulse" title="This item is restricted">
-              <ShieldAlert className="h-4 w-4" />
-              Restricted — contact library
-            </div>
-          </div>
-        ) : (
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            <div className="relative group/tip">
+          {/* Bottom action bar — mirrors the template's result-actions row */}
+          {metadata?.doc_content_type !== "Books" && !isRestricted && (
+            <div className="flex items-center flex-wrap gap-2 pt-3.5 border-t border-dashed border-border">
               <Button
                 variant="outline" size="sm" onClick={handleChatOpen} disabled={isLoading}
                 aria-label="Explore document with AI"
                 className="group relative overflow-hidden border border-peacock bg-peacock-soft text-peacock-deep text-[11px] font-bold tracking-[0.10em] uppercase hover:bg-gradient-to-br hover:from-peacock hover:to-peacock-deep hover:text-white hover:border-transparent hover:shadow-md focus-visible:ring-2 focus-visible:ring-peacock/40 focus-visible:ring-offset-1 active:scale-95 transition-all duration-300"
+                title="Explore document with AI"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" aria-hidden />
                 <Sparkles className="h-3.5 w-3.5 mr-1.5 relative transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-                <span className="hidden sm:inline relative">IntelliDoc</span>
+                <span className="relative">IntelliDoc</span>
                 {isLoading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-sm">
                     <div className="w-4 h-4 border-2 border-peacock border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </Button>
-              <span role="tooltip" className="pointer-events-none absolute top-full right-0 mt-2 z-30 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium normal-case tracking-normal text-white shadow-[0_8px_20px_-6px_rgba(13,20,36,0.5)] opacity-0 -translate-y-1 transition-all duration-200 ease-out group-hover/tip:opacity-100 group-hover/tip:translate-y-0">
-                Explore document with AI
-                <span className="absolute right-4 bottom-full h-0 w-0 border-x-4 border-b-4 border-x-transparent border-b-slate-900" aria-hidden />
-              </span>
-            </div>
 
-            {fullUrl && (
-              <div className="relative group/tip">
-                <a href={fullUrl} target="_blank" rel="noopener noreferrer" aria-label="Open document"
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-300 text-slate-500 shadow-[0_1px_0_rgba(13,20,36,0.02)] transition-all duration-200 hover:border-red-400 hover:text-red-600 hover:bg-red-50 hover:shadow-[0_6px_16px_-6px_rgba(220,38,38,0.4)] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-1">
-                  <PdfIcon className="h-6 w-6 transition-transform duration-200 group-hover/tip:scale-110" />
+              {fullUrl && (
+                <a href={fullUrl} target="_blank" rel="noopener noreferrer" aria-label="Open document" title="Open document"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white border border-slate-300 text-slate-500 shadow-[0_1px_0_rgba(13,20,36,0.02)] transition-all duration-200 hover:border-red-400 hover:text-red-600 hover:bg-red-50 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-1">
+                  <PdfIcon className="h-5 w-5" />
                 </a>
-                <span role="tooltip" className="pointer-events-none absolute top-full right-0 mt-2 z-30 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium normal-case tracking-normal text-white shadow-[0_8px_20px_-6px_rgba(13,20,36,0.5)] opacity-0 -translate-y-1 transition-all duration-200 ease-out group-hover/tip:opacity-100 group-hover/tip:translate-y-0">
-                  Open document
-                  <span className="absolute right-3 bottom-full h-0 w-0 border-x-4 border-b-4 border-x-transparent border-b-slate-900" aria-hidden />
-                </span>
-              </div>
-            )}
+              )}
 
-            <div className="relative group/tip">
               <button
                 type="button"
                 onClick={handleCopyCitation}
                 aria-label="Copy citation"
-                className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-300 text-slate-500 shadow-[0_1px_0_rgba(13,20,36,0.02)] transition-all duration-200 hover:border-primary/40 hover:text-primary hover:bg-primary/5 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1"
+                title="Copy citation"
+                className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white border border-slate-300 text-slate-500 shadow-[0_1px_0_rgba(13,20,36,0.02)] transition-all duration-200 hover:border-primary/40 hover:text-primary hover:bg-primary/5 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1"
               >
                 <Copy className="h-4 w-4" />
               </button>
-              <span role="tooltip" className="pointer-events-none absolute top-full right-0 mt-2 z-30 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-[11px] font-medium normal-case tracking-normal text-white shadow-[0_8px_20px_-6px_rgba(13,20,36,0.5)] opacity-0 -translate-y-1 transition-all duration-200 ease-out group-hover/tip:opacity-100 group-hover/tip:translate-y-0">
-                Copy citation
-                <span className="absolute right-3 bottom-full h-0 w-0 border-x-4 border-b-4 border-x-transparent border-b-slate-900" aria-hidden />
-              </span>
             </div>
-          </div>
-        )}
+          )}
+        </CardContent>
       </Card>
     </>
   );

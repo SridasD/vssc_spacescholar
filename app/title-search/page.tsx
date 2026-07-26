@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   History,
   Search as SearchIcon,
@@ -32,6 +31,8 @@ import {
 const RECENT_KEY = "titleRecentSearches";
 
 type SortKey = "relevance" | "newest" | "oldest" | "title";
+
+const TITLE_SAMPLE_PROMPTS = ["Additive manufacturing", "Chandrayaan", "Thermal Protection System"];
 
 function sortResults(items: any[], sortKey: SortKey) {
   if (sortKey === "relevance") return items;
@@ -106,6 +107,15 @@ function TitleSearchPageInner() {
       )
     );
     setDocTypes(uniqueDocTypes as string[]);
+  }, [allResults]);
+
+  const docTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allResults.forEach((item) => {
+      const type = item._source?.metadata?.doc_content_type;
+      if (type) counts[type] = (counts[type] || 0) + 1;
+    });
+    return counts;
   }, [allResults]);
 
   const years = Array.from(
@@ -405,6 +415,19 @@ function TitleSearchPageInner() {
           <p className="mt-3 text-xs text-white/75">
             Search specifically within document titles across our repository of scholarly publications and research documents.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-white/60">Try a sample:</span>
+            {TITLE_SAMPLE_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => runTerm(prompt)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium text-white bg-white/10 border border-white/20 hover:bg-white/20 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -446,7 +469,8 @@ function TitleSearchPageInner() {
                             onChange={() => toggleTempDocType(type)}
                             className="w-4 h-4 accent-peacock cursor-pointer"
                           />
-                          {type}
+                          <span className="flex-1">{type}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{docTypeCounts[type] ?? 0}</span>
                         </label>
                       ))}
                       {docTypes.length === 0 && (
@@ -533,23 +557,23 @@ function TitleSearchPageInner() {
                     </button>
                   </div>
 
-                  <ScrollArea className="max-h-[40vh]">
+                  <div className="max-h-[40vh] overflow-y-auto">
                     <div className="p-2 space-y-1">
                       {recentSearches.map((search, index) => (
-                        <div key={index} className="group flex items-center rounded-xl border border-transparent hover:border-border hover:bg-muted/60 transition-all duration-200">
-                          <button className="flex-1 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground/80 hover:text-peacock-deep text-left truncate min-w-0" onClick={() => runTerm(search)}>
+                        <div key={index} className="group flex items-center w-full rounded-xl border border-transparent hover:border-border hover:bg-muted/60 transition-all duration-200">
+                          <button className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-foreground/80 hover:text-peacock-deep text-left" onClick={() => runTerm(search)} title={search}>
                             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-peacock-soft group-hover:text-peacock-deep transition-colors flex-shrink-0">
                               <SearchIcon className="w-3.5 h-3.5" />
                             </span>
-                            <span className="truncate">{search}</span>
+                            <span className="flex-1 min-w-0 truncate">{search}</span>
                           </button>
-                          <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 opacity-0 group-hover:opacity-100 hover:bg-rose-50 rounded-md transition-all" title="Remove">
+                          <button onClick={() => handleDeleteSearch(search)} className="p-1.5 mr-1.5 flex-shrink-0 hover:bg-rose-50 rounded-md transition-all" title="Remove">
                             <X className="h-3 w-3 text-muted-foreground hover:text-rose-500" />
                           </button>
                         </div>
                       ))}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
             </aside>
@@ -640,19 +664,18 @@ function TitleSearchPageInner() {
                   <p className="text-xs text-rose-500 mt-1">Please try again in a moment.</p>
                 </div>
               ) : hasSearched && isLoading ? (
-                <div className="mt-8 w-full flex flex-col items-center justify-center py-12 select-none">
-                  <img
-                    src="/images/searching-docs.svg"
-                    alt="Searching documents…"
-                    className="w-[320px] max-w-full h-auto"
-                  />
-                  <p className="mt-2 text-sm font-semibold tracking-wide bg-gradient-to-r from-saffron-deep to-peacock-deep bg-clip-text text-transparent">
-                    Searching through the cosmos<span className="ss-dots" />
-                  </p>
-                  <style dangerouslySetInnerHTML={{ __html: `
-                    .ss-dots::after { content: ""; animation: ssDots 1.4s steps(4,end) infinite; }
-                    @keyframes ssDots { 0%{content:"";} 25%{content:".";} 50%{content:"..";} 75%,100%{content:"...";} }
-                  ` }} />
+                <div className="mt-4 w-full flex items-start justify-center py-6 select-none">
+                  <div className="loader-card">
+                    <div className="loader-mandala" aria-hidden="true">
+                      <span className="loader-core" />
+                    </div>
+                    <strong className="block text-[0.94rem] text-foreground">
+                      Scanning the catalogue title by title...
+                    </strong>
+                    <span className="block mt-1.5 text-[0.78rem] text-muted-foreground">
+                      The animated loader is designed to be informative, calm and unmistakably in progress.
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <>

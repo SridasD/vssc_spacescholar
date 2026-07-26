@@ -15,9 +15,9 @@ import Image from "next/image";
 import vsscNewLogo from "@/public/images/vssc-new-logo.png";
 import { MenuBar } from "@/components/layout/MenuBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import LiaPortrait from "@/components/LiaPortrait";
 
 const LIA_FACE = "/images/LIAface.png";
-const LIA_PORTRAIT = "/images/LIA-Finalimage.png";
 
 type SearchMode = "ai" | "title";
 
@@ -436,16 +436,7 @@ export default function Home() {
         }}
       >
         <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-10 items-center">
-          <div className="relative grid place-items-center min-h-[380px] sm:min-h-[420px]">
-            <div className="lia-orbit" aria-hidden />
-            <div className="lia-portrait-wrap relative w-full max-w-[320px] aspect-square p-2.5">
-              <img
-                src={LIA_PORTRAIT}
-                alt="LIA — virtual assistant"
-                className="w-full h-full object-cover object-top rounded-[inherit]"
-              />
-            </div>
-          </div>
+          <LiaPortrait className="min-h-[380px] sm:min-h-[420px]" />
 
           <div className="text-white">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest bg-white/10 border border-white/15 text-[#ffe2c7]">
@@ -477,41 +468,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        <style dangerouslySetInnerHTML={{ __html: `
-          .lia-orbit {
-            position: absolute; top: 50%; left: 50%; width: min(430px, 95%); aspect-ratio: 1;
-            border: 1px solid rgba(255,255,255,0.18); border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: lia-orbit-spin 18s linear infinite;
-          }
-          .lia-orbit::before, .lia-orbit::after {
-            content: ""; position: absolute; border-radius: 50%;
-            background: var(--turmeric); box-shadow: 0 0 20px rgba(245,196,78,0.55);
-          }
-          .lia-orbit::before { top: 12%; right: 11%; width: 11px; height: 11px; }
-          .lia-orbit::after { left: 7%; bottom: 19%; width: 8px; height: 8px; background: var(--peacock); box-shadow: 0 0 20px rgba(7,158,210,0.5); }
-          @keyframes lia-orbit-spin {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-          }
-
-          .lia-portrait-wrap {
-            border: 1px solid rgba(255,255,255,0.22);
-            border-radius: 45% 55% 52% 48% / 50% 43% 57% 50%;
-            background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
-            box-shadow: 0 30px 80px rgba(0,0,0,0.28);
-            animation: lia-portrait-morph 9s ease-in-out infinite;
-          }
-          @keyframes lia-portrait-morph {
-            0%, 100% { border-radius: 45% 55% 52% 48% / 50% 43% 57% 50%; }
-            50% { border-radius: 52% 48% 45% 55% / 43% 57% 50% 50%; }
-          }
-
-          @media (prefers-reduced-motion: reduce) {
-            .lia-orbit, .lia-portrait-wrap { animation: none !important; }
-          }
-        ` }} />
       </section>
 
       {/* Analytics */}

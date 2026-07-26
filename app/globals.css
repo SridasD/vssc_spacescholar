@@ -267,3 +267,93 @@
   0%, 100% { transform: translateY(-1px); }
   50%      { transform: translateY(3px); }
 }
+
+/* Mandala search loader — ported from the VSSC ILIS design prototype */
+.loader-card {
+  width: min(390px, calc(100% - 30px));
+  padding: 26px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(33, 27, 91, 0.1);
+  text-align: center;
+}
+
+.loader-mandala {
+  position: relative;
+  width: 98px;
+  height: 98px;
+  margin: 0 auto 16px;
+}
+
+.loader-mandala::before,
+.loader-mandala::after,
+.loader-mandala .loader-core {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+
+.loader-mandala::before {
+  inset: 3px;
+  border: 2px dashed rgba(244, 122, 31, 0.62);
+  animation: loader-slow-spin 2.8s linear infinite;
+}
+
+.loader-mandala::after {
+  inset: 18px;
+  border: 2px dotted rgba(7, 158, 210, 0.75);
+  animation: loader-slow-spin 1.9s linear infinite reverse;
+}
+
+.loader-mandala .loader-core {
+  inset: 35px;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(from 45deg, var(--saffron), var(--turmeric), var(--leaf), var(--peacock), hsl(var(--primary)), var(--saffron));
+  box-shadow: 0 0 0 8px rgba(51, 45, 125, 0.06);
+  animation: loader-core-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loader-slow-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loader-core-pulse {
+  0%, 100% { transform: scale(0.88); }
+  50% { transform: scale(1.08); }
+}
+
+/* LIA portrait — shared between the home page and the chat launch screen (components/LiaPortrait.tsx) */
+.lia-orbit {
+  position: absolute; top: 50%; left: 50%; width: min(430px, 95%); aspect-ratio: 1;
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: lia-orbit-spin 18s linear infinite;
+}
+.lia-orbit::before, .lia-orbit::after {
+  content: ""; position: absolute; border-radius: 50%;
+  background: var(--turmeric); box-shadow: 0 0 20px rgba(245,196,78,0.55);
+}
+.lia-orbit::before { top: 12%; right: 11%; width: 11px; height: 11px; }
+.lia-orbit::after { left: 7%; bottom: 19%; width: 8px; height: 8px; background: var(--peacock); box-shadow: 0 0 20px rgba(7,158,210,0.5); }
+@keyframes lia-orbit-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.lia-portrait-wrap {
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 45% 55% 52% 48% / 50% 43% 57% 50%;
+  background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05));
+  box-shadow: 0 30px 80px rgba(0,0,0,0.28);
+  animation: lia-portrait-morph 9s ease-in-out infinite;
+}
+@keyframes lia-portrait-morph {
+  0%, 100% { border-radius: 45% 55% 52% 48% / 50% 43% 57% 50%; }
+  50% { border-radius: 52% 48% 45% 55% / 43% 57% 50% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lia-orbit, .lia-portrait-wrap { animation: none !important; }
+}

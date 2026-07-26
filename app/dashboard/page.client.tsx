@@ -10,13 +10,24 @@ const DashboardPageClient = ({ userName }: { userName: string }) => {
     <div className="min-h-screen bg-white">
       <NavBar />
 
-      <main className="py-10">
-        <div className="px-5 mx-auto max-w-full sm:px-8 lg:px-12 lg:max-w-[110rem]">
+      <div
+        className="relative overflow-hidden px-5 py-6 sm:px-8 lg:px-12"
+        style={{
+          background:
+            "radial-gradient(circle at 90% 0%, rgba(245,196,78,0.22), transparent 26%), linear-gradient(135deg, var(--peacock-deep), hsl(var(--primary)) 58%, var(--peacock))",
+        }}
+      >
+        <div className="mx-auto max-w-full lg:max-w-[110rem]">
           <DashboardHeader
             title="Analytics dashboard"
-            subtitle="v1.0"
+            subtitle="Document processing pipeline overview"
             userName={userName}
           />
+        </div>
+      </div>
+
+      <main className="py-10">
+        <div className="px-5 mx-auto max-w-full sm:px-8 lg:px-12 lg:max-w-[110rem]">
           <Dashboard />
         </div>
       </main>

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Papa from "papaparse";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MetadataWorkflowSteps from "./MetadataWorkflowSteps";
 
 type RawRow = Record<string, string>;
 
@@ -724,13 +725,15 @@ export default function DashboardBulk() {
         </div>
       )}
 
+      <MetadataWorkflowSteps current={2} />
+
       <motion.h2
         className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-saffron-deep to-peacock-deep mb-6 w-[90%]"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        Step 2: Metadata Upload (CSV Only)
+        Metadata Upload (CSV Only)
       </motion.h2>
 
       <div className="p-4 mb-4 rounded-xl border border-peacock/20 bg-peacock-soft text-foreground/80">

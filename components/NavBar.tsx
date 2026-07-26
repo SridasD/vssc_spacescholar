@@ -4,13 +4,53 @@
 import Link from "next/link";
 import LogoutButton from "@/components/LogoutButton";
 import Image from "next/image";
-import vsscLogo from '@/public/images/vssc-logo.png';
-import { useRouter } from "next/navigation";
+import isroVsscLogo from "@/public/images/isro-vssc-logo.png";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Home, Upload, LayoutDashboard } from "lucide-react";
+import { Upload, LayoutDashboard, ChevronDown, FileSpreadsheet, FileCheck2 } from "lucide-react";
+
+const METADATA_STEPS = [
+  {
+    n: 1,
+    href: "/metadata-splitter",
+    title: "Split large files",
+    desc: "Files over 1,000 rows are split into a ZIP of CSVs.",
+    icon: FileSpreadsheet,
+  },
+  {
+    n: 2,
+    href: "/metadata-uploader",
+    title: "Upload & review",
+    desc: "Validate your CSV and submit it for processing.",
+    icon: FileCheck2,
+  },
+];
 
 const NavBar: React.FC = () => {
     const router = useRouter();
+    const pathname = usePathname();
+    const [metaOpen, setMetaOpen] = useState(false);
+    const metaRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (!metaOpen) return;
+      const handleClickOutside = (e: MouseEvent) => {
+        if (metaRef.current && !metaRef.current.contains(e.target as Node)) {
+          setMetaOpen(false);
+        }
+      };
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setMetaOpen(false);
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscape);
+      };
+    }, [metaOpen]);
+
     return (
       <nav className="bg-white shadow border-b border-border">
         <div
@@ -25,28 +65,24 @@ const NavBar: React.FC = () => {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2.5 cursor-pointer flex-shrink-0"
                 onClick={() => router.push("/")}
               >
                 <Image
-                  src={vsscLogo}
-                  alt="VSSC Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
+                  src={isroVsscLogo}
+                  alt="ISRO / VSSC"
+                  width={38}
+                  height={38}
+                  className="object-contain flex-shrink-0"
                 />
-
-                <span className="font-semibold text-lg bg-gradient-to-r logo-gradient bg-clip-text text-transparent">
-                  SPACE SCHOLAR
-                </span>
-                <span className="text-gray-300 font-light mx-2">|</span>
-                <Image
-                  src="/images/vssc-orginal-logo.png"
-                  alt="VSSC Original Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
+                <div className="hidden sm:flex flex-col leading-tight">
+                  <span className="text-[13px] font-bold tracking-tight text-foreground whitespace-nowrap">
+                    Library &amp; Information Resource Division
+                  </span>
+                  <span className="text-[9px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+                    Vikram Sarabhai Space Centre
+                  </span>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -59,66 +95,60 @@ const NavBar: React.FC = () => {
                   Dashboard
                 </Button>
               </Link>
-              <div className="relative group">
-                {/* Dropdown logic */}
-                <div className="relative">
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 rounded-full text-foreground/80 hover:text-peacock-deep hover:bg-peacock-soft"
-                    id="metadata-uploader-dropdown-btn"
-                    type="button"
-                    onClick={() => {
-                      const dropdown = document.getElementById('metadata-uploader-dropdown');
-                      if (dropdown) {
-                        dropdown.classList.toggle('hidden');
-                      }
-                    }}
-                  >
-                    <Upload className="w-4 h-4" />
-                    Metadata uploader
-                    <svg
-                      className="w-4 h-4 ml-1"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </Button>
 
-                  <div
-                    id="metadata-uploader-dropdown"
-                    className="absolute left-0 z-50 mt-2 w-72 origin-top-right rounded-xl border border-border bg-white shadow-lg hidden"
-                  >
-                    <div className="py-1">
-                      <Link href="/metadata-splitter">
-                        <span className="block px-4 py-2 text-sm text-foreground hover:bg-peacock-soft cursor-pointer">
-                          Step 1: Upload CSV
-                          <span className="block text-xs text-muted-foreground">
-                            Large file? No worries—files with more than 1,000 rows
-                            are auto-split for you.
-                          </span>
-                        </span>
-                      </Link>
+              <div className="relative" ref={metaRef}>
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 rounded-full text-foreground/80 hover:text-peacock-deep hover:bg-peacock-soft"
+                  type="button"
+                  aria-haspopup="true"
+                  aria-expanded={metaOpen}
+                  onClick={() => setMetaOpen((open) => !open)}
+                >
+                  <Upload className="w-4 h-4" />
+                  Metadata uploader
+                  <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${metaOpen ? "rotate-180" : ""}`} />
+                </Button>
 
-                      <Link href="/metadata-uploader">
-                        <span className="block px-4 py-2 text-sm text-foreground hover:bg-peacock-soft cursor-pointer">
-                          Step 2: Review & Submit
-                          <span className="block text-xs text-muted-foreground">
-                            After your file is successfully validated and contains
-                            up to 1,000 rows (or has been split), you can review
-                            and submit it for final processing
-                          </span>
-                        </span>
-                      </Link>
+                {metaOpen && (
+                  <div className="absolute left-0 z-50 mt-2 w-80 rounded-xl border border-border bg-white shadow-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-peacock-soft border-b border-border">
+                      <p className="text-sm font-semibold text-foreground m-0">Metadata upload workflow</p>
+                      <p className="text-xs text-muted-foreground m-0 mt-0.5">Two steps — split large files first, then upload.</p>
+                    </div>
+                    <div className="py-1.5">
+                      {METADATA_STEPS.map((step) => {
+                        const isActive = pathname === step.href;
+                        const Icon = step.icon;
+                        return (
+                          <Link key={step.n} href={step.href} onClick={() => setMetaOpen(false)}>
+                            <div className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer transition-colors ${isActive ? "bg-peacock-soft" : "hover:bg-muted"}`}>
+                              <span
+                                className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold mt-0.5 ${
+                                  isActive ? "bg-peacock-deep text-white" : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {step.n}
+                              </span>
+                              <span className="min-w-0">
+                                <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                                  <Icon className="w-3.5 h-3.5 text-peacock-deep flex-shrink-0" />
+                                  {step.title}
+                                  {isActive && (
+                                    <span className="text-[10px] font-bold text-peacock-deep uppercase tracking-wide">
+                                      · current
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="block text-xs text-muted-foreground mt-0.5">{step.desc}</span>
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <Button

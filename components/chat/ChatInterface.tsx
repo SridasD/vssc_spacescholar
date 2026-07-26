@@ -21,11 +21,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MenuBar } from "@/components/layout/MenuBar";
+import LiaPortrait from "@/components/LiaPortrait";
 
 const BOT_SRC = "/images/LIAface.png";
-
-
-const LIA_SRC = "/images/LIA-Finalimage.png";
 
 
 const LOGO_SRC = "/images/LIA-Logo.png";
@@ -47,7 +45,12 @@ interface ChatSession {
     title: string;
     timestamp: Date;
     preview: string;
+    messages: Message[];
 }
+
+// Chat history lives only in localStorage (no backend session store), so a
+// conversation survives a refresh and can be reopened from "Recent".
+const SESSIONS_STORAGE_KEY = 'lia_chat_sessions';
 
 export function ChatInterface() {
     const router = useRouter();
@@ -73,9 +76,57 @@ export function ChatInterface() {
         scrollToBottom();
     }, [messages, isLoading]);
 
+    // Load saved conversations once on mount. Dates come back from JSON as
+    // strings, so they need reviving into real Date objects before use.
     useEffect(() => {
-        textareaRef.current?.focus();
+        try {
+            const raw = localStorage.getItem(SESSIONS_STORAGE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw) as ChatSession[];
+            setSessions(
+                parsed.map(s => ({
+                    ...s,
+                    timestamp: new Date(s.timestamp),
+                    messages: s.messages.map(m => ({
+                        ...m,
+                        timestamp: m.timestamp ? new Date(m.timestamp) : undefined,
+                    })),
+                }))
+            );
+        } catch (err) {
+            console.error('Failed to load saved conversations:', err);
+        }
     }, []);
+
+    // Persist on every change so a refresh (or reopening the tab) doesn't lose history.
+    useEffect(() => {
+        try {
+            localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+        } catch (err) {
+            console.error('Failed to save conversation history:', err);
+        }
+    }, [sessions]);
+
+    // Keep the active session's stored messages/preview in sync as the live conversation grows.
+    useEffect(() => {
+        if (!activeSessionId || messages.length === 0) return;
+        setSessions(prev =>
+            prev.map(s =>
+                s.id === activeSessionId
+                    ? { ...s, messages, preview: messages[messages.length - 1].content }
+                    : s
+            )
+        );
+    }, [messages, activeSessionId]);
+
+    // `disabled` only clears from the textarea after this re-render, so focusing
+    // synchronously inside sendMessageContent's `finally` was a no-op on a still-disabled
+    // element. Focusing here — once `isLoading` has actually flipped back to false — works.
+    useEffect(() => {
+        if (!isLoading) {
+            textareaRef.current?.focus();
+        }
+    }, [isLoading]);
 
     const autoResize = () => {
         const el = textareaRef.current;
@@ -108,6 +159,7 @@ export function ChatInterface() {
                         : userMessage,
                 timestamp: new Date(),
                 preview: userMessage,
+                messages: [],
             };
             setSessions(prev => [newSession, ...prev]);
             setActiveSessionId(newSession.id);
@@ -150,7 +202,6 @@ export function ChatInterface() {
             setIsLoading(false);
             if (textareaRef.current) {
                 textareaRef.current.style.height = 'auto';
-                textareaRef.current.focus();
             }
         }
     };
@@ -175,6 +226,12 @@ export function ChatInterface() {
         setActiveSessionId(null);
         setInput('');
         textareaRef.current?.focus();
+    };
+
+    const handleSelectSession = (session: ChatSession) => {
+        if (session.id === activeSessionId) return;
+        setActiveSessionId(session.id);
+        setMessages(session.messages);
     };
 
     const handleSuggestedPrompt = (prompt: string) => {
@@ -280,7 +337,7 @@ export function ChatInterface() {
                                 {sessions.map(session => (
                                     <button
                                         key={session.id}
-                                        onClick={() => setActiveSessionId(session.id)}
+                                        onClick={() => handleSelectSession(session)}
                                         className={`w-full text-left px-3 py-2.5 rounded-xl transition-all duration-200 group border ${
                                             activeSessionId === session.id
                                                 ? 'bg-primary/10 border-primary/20 shadow-sm'
@@ -372,16 +429,10 @@ export function ChatInterface() {
                                 <div className="min-h-full w-full flex flex-col lg:flex-row">
 
                                     
-                                    <div className="relative flex-shrink-0 self-stretch
-                                                    w-full lg:w-[clamp(300px,28vw,460px)]
-                                                    h-[38vh] min-h-[260px] lg:h-auto lg:min-h-[640px]">
-                                        <img
-                                            src={LIA_SRC}
-                                            alt="LIA — Library Intelligent Assistant"
-                                            className="absolute inset-0 w-full h-full object-contain object-bottom
-                                                       pt-6 lg:pt-32 select-none pointer-events-none"
-                                            draggable={false}
-                                        />
+                                    <div className="flex-shrink-0 self-stretch flex items-center justify-center
+                                                    w-full lg:w-[clamp(300px,28vw,420px)]
+                                                    min-h-[260px] lg:min-h-[640px] p-6 lg:p-10">
+                                        <LiaPortrait className="w-full max-w-[280px]" />
                                     </div>
 
                                 
@@ -550,6 +601,7 @@ export function ChatInterface() {
                                     disabled={isLoading}
                                     rows={1}
                                     onKeyDown={handleKeyDown}
+                                    autoFocus
                                 />
                                 <button
                                     type="submit"
