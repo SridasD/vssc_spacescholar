@@ -8,6 +8,7 @@ import {
   MessageSquarePlus,
   ListChecks,
   ExternalLink,
+  Phone,
 } from "lucide-react";
 import { MenuBar } from "@/components/layout/MenuBar";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -151,68 +152,99 @@ export default function HelpPage() {
 
           {/* Other ways to reach us */}
           <section>
-            <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3">
+            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3">
+              <Phone className="w-4 h-4 text-primary" />
               Other ways to reach us
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              <Card className="border-border shadow-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+              {/* Library help desk — full width; it carries the most content (a 6-entry
+                  phone directory), so it gets the room to lay those out as a proper grid
+                  instead of being squeezed into a one-third column. */}
+              <Card className="border-border shadow-sm lg:col-span-12">
                 <CardContent className="p-6">
-                  <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-saffron-soft text-saffron-deep mb-4">
-                    <Headset className="w-5 h-5" />
-                  </span>
-                  <h3 className="font-semibold text-foreground mb-1.5">Library help desk</h3>
-                  <p className="text-sm text-muted-foreground">
-                    General queries about the catalogue, borrowing, or account access.
-                  </p>
+                  <div className="flex items-start gap-4">
+                    <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-saffron-soft text-saffron-deep flex-shrink-0">
+                      <Headset className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1.5">Library help desk</h3>
+                      <p className="text-sm text-muted-foreground">
+                        General queries about the catalogue, borrowing, or account access.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-5 border-t border-dashed border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                    {[
+                      { label: "Front Desk", phone: "4985" },
+                      { label: "Digital Library", phone: "4844" },
+                      { label: "Collection Development & Indexing Section", phone: "4984" },
+                      { label: "Central Documentation Facility", phone: "4380 / 5341" },
+                      { label: "Information Service Section", phone: "5720 / 4736" },
+                      { label: "Reference & Collection Management Section", phone: "5396" },
+                    ].map(({ label, phone }) => (
+                      <div key={label}>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-0.5">{label}</p>
+                        <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-saffron-deep flex-shrink-0" />
+                          {phone}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border shadow-sm">
-                <CardContent className="p-6">
+              <Card className="border-border shadow-sm h-full lg:col-span-6">
+                <CardContent className="p-6 h-full flex flex-col">
                   <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-leaf-soft text-leaf mb-4">
                     <MessageCircleQuestion className="w-5 h-5" />
                   </span>
                   <h3 className="font-semibold text-foreground mb-1.5">Research consultation</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-muted-foreground">
                     Need help finding sources for a research problem? Ask a librarian directly.
                   </p>
-                  {ASK_LIBRARIAN_URL ? (
-                    <a
-                      href={ASK_LIBRARIAN_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-semibold text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      Ask a Librarian
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  ) : (
-                    <Link
-                      href="/ask-librarian"
-                      className="text-sm font-semibold text-primary hover:underline inline-flex items-center gap-1"
-                    >
-                      Ask a Librarian
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
+
+                  <div className="mt-auto pt-4 border-t border-dashed border-border">
+                    {ASK_LIBRARIAN_URL ? (
+                      <a
+                        href={ASK_LIBRARIAN_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-leaf hover:underline"
+                      >
+                        Ask a Librarian
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <Link
+                        href="/ask-librarian"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-leaf hover:underline"
+                      >
+                        Ask a Librarian
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border shadow-sm">
-                <CardContent className="p-6">
+              <Card className="border-border shadow-sm h-full lg:col-span-6">
+                <CardContent className="p-6 h-full flex flex-col">
                   <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-peacock-soft text-peacock-deep mb-4">
                     <Database className="w-5 h-5" />
                   </span>
                   <h3 className="font-semibold text-foreground mb-1.5">Catalogue &amp; access</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-muted-foreground">
                     Browse the full library catalogue or the online public access catalogue (OPAC).
                   </p>
-                  <div className="flex flex-col gap-1 text-sm font-semibold text-primary">
+
+                  <div className="mt-auto pt-4 border-t border-dashed border-border flex flex-col gap-2 text-sm font-semibold text-peacock-deep">
                     <a
                       href="https://gyaanpath.vssc.dos.gov.in/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline inline-flex items-center gap-1"
+                      className="inline-flex items-center gap-1.5 hover:underline"
                     >
                       Library
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -221,7 +253,7 @@ export default function HelpPage() {
                       href={process.env.NEXT_PUBLIC_OPAC_URL || "http://10.41.7.248/"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline inline-flex items-center gap-1"
+                      className="inline-flex items-center gap-1.5 hover:underline"
                     >
                       OPAC
                       <ChevronRight className="w-3.5 h-3.5" />

@@ -23,6 +23,7 @@ import { SearchResults } from "@/components/search/SearchResults";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MenuBar } from "@/components/layout/MenuBar";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import {
   exportToExcel,
   exportToPDF,
@@ -386,7 +387,7 @@ function SearchPageInner() {
             </Button>
           </form>
           <p className="mt-3 text-xs text-white/75">
-            Describe a topic in everyday language — LIA finds conceptually related records, not just keyword matches.
+            Describe a topic in everyday language — Spacescholar finds conceptually related records, not just keyword matches.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-white/60">Try a sample:</span>
@@ -702,6 +703,7 @@ function SearchPageInner() {
           </div>
         </div>
       </div>
+      <ScrollToTopButton />
     </div>
   );
 }

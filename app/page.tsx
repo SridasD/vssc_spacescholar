@@ -80,7 +80,7 @@ const DISCOVERY_CARDS = [
     title: "LIA",
     description:
       "Need help finding information, exploring resources, services or getting research support? Just ask…",
-    linkLabel: "Talk to LIA",
+    linkLabel: "Chat with LIA",
     href: "/chat",
     accent: "leaf" as const,
   },

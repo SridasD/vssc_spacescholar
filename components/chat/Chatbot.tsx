@@ -107,12 +107,37 @@ const sizeConfig = {
     },
 };
 
-const ensureWithinViewport = (y: number, chatHeight: number): number => {
-    const viewportHeight = window.innerHeight;
-    const minTop = 20;
-    const minBottom = 60;
-    const maxY = viewportHeight - chatHeight - minBottom;
-    return Math.min(Math.max(minTop, y), maxY);
+// The page header (MenuBar) is a sticky h-16 (64px) bar plus a 5px tricolour
+// strip — HEADER_CLEARANCE keeps the chat window's own header (with its
+// minimize/maximize/close controls) from ever landing behind it.
+const HEADER_CLEARANCE = 84;
+const EDGE_MARGIN = 20;
+const BOTTOM_MARGIN = 60;
+
+// Both clamps share the same shape: clamp `pos` into [floor, max], but `max`
+// itself is floored too. Without that second floor, a window taller/wider
+// than the available viewport (short screen height, narrow browser window,
+// heavy zoom, devtools open, etc.) makes `max` go below `floor`, and
+// `Math.min(Math.max(floor, pos), max)` then returns `max` — a value *less*
+// than floor — silently defeating the "never go above this edge" guarantee
+// and pushing the window (and its controls) off-screen. This bit every call
+// site below until each `max` was floored the same way.
+const clampY = (y: number, chatHeight: number, viewportHeight: number = window.innerHeight): number => {
+    const maxY = Math.max(HEADER_CLEARANCE, viewportHeight - chatHeight - BOTTOM_MARGIN);
+    return Math.min(Math.max(HEADER_CLEARANCE, y), maxY);
+};
+
+const clampX = (x: number, chatWidth: number, viewportWidth: number = window.innerWidth): number => {
+    const maxX = Math.max(EDGE_MARGIN, viewportWidth - chatWidth - EDGE_MARGIN);
+    return Math.min(Math.max(EDGE_MARGIN, x), maxX);
+};
+
+// "large" (800px min width) is the default on desktop, but doesn't fit
+// comfortably on a narrower browser window/tablet-width viewport — falling
+// back to "normal" there avoids opening a window wider than the screen.
+const getInitialSize = (): Size => {
+    if (typeof window === "undefined") return "large";
+    return window.innerWidth < sizeConfig.large.minWidth + EDGE_MARGIN * 2 ? "normal" : "large";
 };
 
 export default function Chatbot({
@@ -139,13 +164,21 @@ export default function Chatbot({
 
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [size, setSize] = useState<Size>("large");
+    const [size, setSize] = useState<Size>(getInitialSize);
     const [isMinimized, setIsMinimized] = useState(false);
     const [position, setPosition] = useState<Position>(() => {
-        const initialY =
-            window.innerHeight - sizeConfig.large.minHeight - 80;
+        const initialConfig = sizeConfig[getInitialSize()];
+        const viewportWidth = window.innerWidth;
+        const initialY = window.innerHeight - initialConfig.minHeight - 80;
 
-        const slotPositions = [20, 440, 860, 1280];
+        // Slots are computed from the actual viewport width and chat width
+        // rather than fixed pixel offsets — on a narrow window the old fixed
+        // slots (20/440/860/1280) could land a window partially or fully
+        // off-screen; this always produces at least one on-screen slot.
+        const slotGap = EDGE_MARGIN;
+        const slotStride = initialConfig.minWidth + slotGap;
+        const slotCount = Math.max(1, Math.min(4, Math.floor((viewportWidth - slotGap) / slotStride)));
+        const slotPositions = Array.from({ length: slotCount }, (_, i) => slotGap + i * slotStride);
 
         const existingChats = Array.from(
             globalThis.document.querySelectorAll(".chatbox-window")
@@ -157,11 +190,11 @@ export default function Chatbot({
         });
 
         const freeSlot =
-            slotPositions.find((slot) => !occupiedSlots.includes(slot)) ?? 20;
+            slotPositions.find((slot) => !occupiedSlots.includes(slot)) ?? slotPositions[0];
 
         return {
-            x: freeSlot,
-            y: ensureWithinViewport(initialY, sizeConfig.large.minHeight),
+            x: clampX(freeSlot, initialConfig.minWidth, viewportWidth),
+            y: clampY(initialY, initialConfig.minHeight),
         };
     });
 
@@ -201,22 +234,14 @@ export default function Chatbot({
         }
     }, [summary]);
 
-    const handleSizeChange = useCallback(
-        (newSize: Size) => {
-            const newConfig = sizeConfig[newSize];
-            const newY = ensureWithinViewport(position.y, newConfig.minHeight);
-
-            setPosition((prev) => ({
-                x: Math.min(
-                    prev.x,
-                    window.innerWidth - newConfig.minWidth - 20
-                ),
-                y: newY,
-            }));
-            setSize(newSize);
-        },
-        [position]
-    );
+    const handleSizeChange = useCallback((newSize: Size) => {
+        const newConfig = sizeConfig[newSize];
+        setPosition((prev) => ({
+            x: clampX(prev.x, newConfig.minWidth),
+            y: clampY(prev.y, newConfig.minHeight),
+        }));
+        setSize(newSize);
+    }, []);
 
     const toggleSize = useCallback(() => {
         const sizeOrder: Size[] = ["normal", "large", "full"];
@@ -229,11 +254,8 @@ export default function Chatbot({
         const handleResize = () => {
             const currentConfig = sizeConfig[size];
             setPosition((prev) => ({
-                x: Math.min(
-                    Math.max(20, prev.x),
-                    window.innerWidth - currentConfig.minWidth - 20
-                ),
-                y: ensureWithinViewport(prev.y, currentConfig.minHeight),
+                x: clampX(prev.x, currentConfig.minWidth),
+                y: clampY(prev.y, currentConfig.minHeight),
             }));
         };
 
@@ -280,16 +302,8 @@ export default function Chatbot({
             }
 
             const currentConfig = sizeConfig[size];
-            const newX = Math.min(
-                Math.max(20, e.clientX - dragOffset.current.x),
-                window.innerWidth - currentConfig.minWidth - 20
-            );
-
-            const proposedY = e.clientY - dragOffset.current.y;
-            const newY = ensureWithinViewport(
-                proposedY,
-                currentConfig.minHeight
-            );
+            const newX = clampX(e.clientX - dragOffset.current.x, currentConfig.minWidth);
+            const newY = clampY(e.clientY - dragOffset.current.y, currentConfig.minHeight);
 
             setPosition({ x: newX, y: newY });
         },

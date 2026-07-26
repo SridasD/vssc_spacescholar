@@ -1,10 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// Set once the real "Ask a Librarian" destination is shared — when present,
-// the link opens externally in a new tab instead of the internal page.
-const ASK_LIBRARIAN_URL = process.env.NEXT_PUBLIC_ASK_LIBRARIAN_URL || "";
-
 export function SiteFooter() {
   return (
     <footer className="w-full flex-shrink-0 bg-white border-t border-border">
@@ -51,20 +47,6 @@ export function SiteFooter() {
               >
                 OPAC
               </a>
-              {ASK_LIBRARIAN_URL ? (
-                <a
-                  href={ASK_LIBRARIAN_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-saffron-deep"
-                >
-                  Ask a Librarian
-                </a>
-              ) : (
-                <Link href="/ask-librarian" className="hover:text-saffron-deep">
-                  Ask a Librarian
-                </Link>
-              )}
               <Link href="/help" className="hover:text-saffron-deep">
                 Help
               </Link>

@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Home,
   Search,
-  MessageSquare,
-  HelpCircle,
   LifeBuoy,
   Menu,
   X,
@@ -18,9 +16,6 @@ import isroVsscLogo from "@/public/images/isro-vssc-logo.png";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// Set once the real "Ask a Librarian" destination is shared — when present,
-// the link opens externally in a new tab instead of the internal page.
-const ASK_LIBRARIAN_URL = process.env.NEXT_PUBLIC_ASK_LIBRARIAN_URL || "";
 const OPAC_URL = process.env.NEXT_PUBLIC_OPAC_URL || "http://10.41.7.248/";
 const LIBRARY_URL = "https://gyaanpath.vssc.dos.gov.in/";
 
@@ -33,19 +28,12 @@ interface NavLinkDef {
   hoverClass: string;
 }
 
-// Internal app navigation (search modes, help, ask-a-librarian).
+// Internal app navigation (search modes, help). "Ask a Librarian" lives on
+// the Help page (alongside Feedback) rather than as a top-level nav item.
 const NAV_LINKS: NavLinkDef[] = [
   { key: "home", label: "Home", icon: Home, href: "/", hoverClass: "hover:text-primary hover:bg-primary/10" },
   { key: "ai-search", label: "AI Search", icon: Search, href: "/search", hoverClass: "hover:text-saffron-deep hover:bg-saffron-soft" },
   { key: "title-search", label: "Title Search", icon: Search, href: "/title-search", hoverClass: "hover:text-peacock-deep hover:bg-peacock-soft" },
-  {
-    key: "ask-librarian",
-    label: "Ask a Librarian",
-    icon: HelpCircle,
-    href: ASK_LIBRARIAN_URL || "/ask-librarian",
-    external: !!ASK_LIBRARIAN_URL,
-    hoverClass: "hover:text-leaf hover:bg-leaf-soft",
-  },
   { key: "help", label: "Help", icon: LifeBuoy, href: "/help", hoverClass: "hover:text-peacock-deep hover:bg-peacock-soft" },
 ];
 
@@ -145,7 +133,7 @@ export function MenuBar() {
                         className="ml-1 flex items-center gap-1.5 rounded-full text-white shadow-sm hover:opacity-90 whitespace-nowrap px-3.5"
                         style={{ background: "linear-gradient(135deg, hsl(var(--primary)), var(--peacock-deep))" }}
                     >
-                        <MessageSquare className="w-4 h-4" />
+                        <img src="/images/LIAface.png" alt="" className="w-5 h-5 rounded-full object-cover" />
                         Chat with LIA
                     </Button>
                 </div>
@@ -205,7 +193,7 @@ export function MenuBar() {
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-white mt-1"
                         style={{ background: "linear-gradient(135deg, hsl(var(--primary)), var(--peacock-deep))" }}
                     >
-                        <MessageSquare className="w-4 h-4" />
+                        <img src="/images/LIAface.png" alt="" className="w-5 h-5 rounded-full object-cover" />
                         Chat with LIA
                     </button>
                 </div>

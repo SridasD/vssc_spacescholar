@@ -2,6 +2,7 @@ import { SearchDocument } from "@/lib/types/search.types";
 import { SearchResult } from "./SearchResult";
 import Chatbot from "@/components/chat/Chatbot";
 import { useState } from "react";
+import { SearchX } from "lucide-react";
 
 interface SearchResultsProps {
   results: SearchDocument[];
@@ -46,8 +47,16 @@ export function SearchResults({
 
   if (!results.length) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No documents found in this galaxy. Try a different search query.
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-6 text-center rounded-2xl border border-dashed border-border bg-white">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
+          <SearchX className="w-6 h-6 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">No documents found</p>
+          <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+            Try a different search term, or check for typos and broaden your query.
+          </p>
+        </div>
       </div>
     );
   }

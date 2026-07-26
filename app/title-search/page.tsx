@@ -22,6 +22,7 @@ import { SearchResults } from "@/components/search/SearchResults";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MenuBar } from "@/components/layout/MenuBar";
+import { ScrollToTopButton } from "@/components/ScrollToTopButton";
 import {
   exportToExcel,
   exportToPDF,
@@ -413,7 +414,7 @@ function TitleSearchPageInner() {
             </Button>
           </form>
           <p className="mt-3 text-xs text-white/75">
-            Search specifically within document titles across our repository of scholarly publications and research documents.
+            Search specifically within document titles across our repository.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-xs font-semibold text-white/60">Try a sample:</span>
@@ -730,6 +731,7 @@ function TitleSearchPageInner() {
           </div>
         </div>
       </div>
+      <ScrollToTopButton />
     </div>
   );
 }

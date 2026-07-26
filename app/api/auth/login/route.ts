@@ -22,26 +22,45 @@ const loginSchema = z
   })
   .strict();
 
+// Explicit allow-list for production, e.g. "https://vsscdashboard.cdipd.in" —
+// comma-separated if there's more than one public origin.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 // Same-origin check: defense in depth against CSRF alongside sameSite:strict
 // cookies. Browsers always send Origin (or, failing that, Referer) on
 // cross-origin fetch/XHR/form submissions; if either is present and doesn't
 // match this app's own origin, reject the request.
 function isSameOriginRequest(req: Request): boolean {
-  const selfOrigin = new URL(req.url).origin;
   const origin = req.headers.get("origin");
-  if (origin) return origin === selfOrigin;
-
-  const referer = req.headers.get("referer");
-  if (referer) {
-    try {
-      return new URL(referer).origin === selfOrigin;
-    } catch {
-      return false;
-    }
-  }
+  const candidate =
+    origin ??
+    (() => {
+      const referer = req.headers.get("referer");
+      if (!referer) return null;
+      try {
+        return new URL(referer).origin;
+      } catch {
+        return null;
+      }
+    })();
 
   // Neither header present — allow (e.g. some non-browser API clients).
-  return true;
+  if (candidate === null) return true;
+
+  if (ALLOWED_ORIGINS.length > 0) {
+    return ALLOWED_ORIGINS.includes(candidate);
+  }
+
+  // No explicit allow-list configured (e.g. local dev) — fall back to
+  // request-derived same-origin. NOTE: req.url reflects whatever host Node
+  // itself sees, which behind a reverse proxy (nginx, ALB, etc.) is often an
+  // internal address rather than the public HTTPS domain the browser sent —
+  // that mismatch is exactly why this fails in production without
+  // ALLOWED_ORIGINS set, even though it works fine in local dev with no proxy.
+  return candidate === new URL(req.url).origin;
 }
 
 export async function POST(req: Request) {
