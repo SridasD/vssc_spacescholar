@@ -22,7 +22,7 @@ type SearchMode = "ai" | "title";
 
 const SAMPLE_PROMPTS: Record<SearchMode, string[]> = {
   ai: [
-    "Benefits of regenerative cooling in liquid rocket engine?",
+    "Benefits of regenerative cooling in liquid rocket engine",
     "What is crew module?",
   ],
   title: ["Additive manufacturing", "Chandrayaan", "Thermal Protection System"],
@@ -214,11 +214,10 @@ export default function Home() {
                   key={m}
                   type="button"
                   onClick={() => setMode(m)}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                    mode === m
-                      ? "bg-white text-primary shadow-sm"
-                      : "text-foreground/60 hover:text-foreground"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${mode === m
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-foreground/60 hover:text-foreground"
+                    }`}
                 >
                   {m === "ai" ? (
                     <Sparkles className="w-3.5 h-3.5" />
@@ -318,7 +317,8 @@ export default function Home() {
           </div>
         </div>
 
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           .hero-logo-wrap { position: relative; display: inline-grid; place-items: center; margin-bottom: 0; }
           .hero-logo-wrap::before {
             content: ""; position: absolute; width: 82%; aspect-ratio: 1; border-radius: 50%;
