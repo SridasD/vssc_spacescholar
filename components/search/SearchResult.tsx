@@ -326,7 +326,7 @@ export function SearchResult({
 
 
           <div
-            className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 pt-3.5 border-t border-dashed border-border mt-1"
+            className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 pt-3.5 border-t border-dashed border-border mt-1"
             style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}
           >
             {showExtras && (
@@ -345,13 +345,6 @@ export function SearchResult({
               <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Document No.</span>
               <span className="text-[15px] font-semibold text-foreground">{documentNo || "N/A"}</span>
             </div>
-
-            {showExtras && relevancePct !== null && (
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] tracking-[0.16em] uppercase text-muted-foreground">Relevance</span>
-                <span className="text-[15px] font-semibold text-foreground">{relevancePct}%</span>
-              </div>
-            )}
           </div>
 
           {/* Bottom action bar — mirrors the template's result-actions row */}
