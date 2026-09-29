@@ -108,7 +108,9 @@ try {
     # uploaded_files is real application data (user-uploaded documents), not
     # source — bundling it would also risk overwriting whatever's already live
     # on the server with this machine's local/test uploads.
-    $excludedNames = @('node_modules', '.git', '.next', 'Backup', 'certificates', 'uploaded_files')
+    # docs holds internal reports (e.g. VAPT scans) and legacy-scripts holds
+    # retired scripts — neither belongs on the server.
+    $excludedNames = @('node_modules', '.git', '.next', 'Backup', 'certificates', 'uploaded_files', 'docs', 'legacy-scripts')
     $excludedPatterns = @('staging_*', 'source_*', '.env*')
 
     $stagingDir = Join-Path -Path $parentDir -ChildPath "source_$timestamp"
