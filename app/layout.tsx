@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { Inter, Poppins } from 'next/font/google';
 import { Toaster } from "sonner";
 
@@ -25,11 +26,15 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Render every page per request: the CSP nonce set in middleware.ts can
+  // only be applied to Next.js's scripts during dynamic rendering.
+  await connection();
+
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <head>
