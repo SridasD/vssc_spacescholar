@@ -11,7 +11,7 @@
     at best. The local build here exists purely to catch a broken build BEFORE
     shipping source over, rather than finding out only after DevOps runs it.
 
-    Unlike create-backup.ps1 / create-backup-with-env.ps1 / "create-backup copy.ps1",
+    Unlike the retired create-backup*.ps1 scripts (now in legacy-scripts/, git-ignored),
     which only zip up an *already-built* .next folder (the opposite use case —
     a pre-built artifact for a server that just runs `next start`), this script
     fails loudly (non-zero exit code) on any build error instead of silently
