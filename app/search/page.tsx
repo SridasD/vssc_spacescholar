@@ -656,6 +656,7 @@ function SearchPageInner() {
                   <SearchResults
                     results={pagedResults}
                     isLoading={isLoading}
+                    hasSearched={hasSearched}
                     allResults={allResults}
                     showExtras={true}
                     selectedIds={selectedIds}

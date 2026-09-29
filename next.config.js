@@ -16,22 +16,8 @@ const nextConfig = {
       { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
       { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
       { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
-      // Report-Only for now: this app relies on Next.js's inline bootstrap
-      // scripts, so an enforcing CSP needs a nonce/hash strategy first.
-      // Switch to "Content-Security-Policy" once verified against real
-      // traffic (see Security Remediation Plan, Phase 3).
-      {
-        key: "Content-Security-Policy-Report-Only",
-        value: [
-          "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-          "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: blob:",
-          "font-src 'self' data:",
-          "connect-src 'self'",
-          "frame-ancestors 'none'",
-        ].join("; "),
-      },
+      // Content-Security-Policy is set per request in middleware.ts, since
+      // it carries a fresh nonce for every page render.
     ];
 
     return [

@@ -25,8 +25,71 @@ try {
 }
 
 
+// Origin (scheme://host[:port]) of a configured URL, or null if unset/invalid.
+function originOf(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
+// Enforced, nonce-based CSP. Next.js reads the nonce from the request's
+// Content-Security-Policy header during SSR and applies it to its own
+// framework/bootstrap scripts, so no 'unsafe-inline' is needed for scripts.
+// This requires dynamic rendering — see app/layout.tsx.
+function buildCsp(nonce: string): string {
+  const isDev = process.env.NODE_ENV === "development";
+  // Client components call the backend API / uploads host directly
+  // (chat, FAQ chat, summaries), so those origins must be reachable.
+  const apiOrigins = [
+    originOf(process.env.NEXT_PUBLIC_API_BASE_URL),
+    originOf(process.env.NEXT_PUBLIC_API_UPLOADS_URL),
+  ].filter(Boolean);
+  // The help page embeds an optional help video.
+  const frameOrigins = [originOf(process.env.NEXT_PUBLIC_HELP_VIDEO_URL)].filter(Boolean);
+
+  return [
+    "default-src 'self'",
+    // 'unsafe-eval' only in dev: React uses eval for dev-time error stacks,
+    // never in a production build.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    // Styles stay 'unsafe-inline': React style props and the inline <style>
+    // blocks can't carry a nonce, and adding one would disable 'unsafe-inline'.
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    ["connect-src 'self'", ...apiOrigins].join(" "),
+    ["frame-src 'self'", ...frameOrigins].join(" "),
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ].join("; ");
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const nonce = btoa(crypto.randomUUID());
+  const csp = buildCsp(nonce);
+  // Forward the CSP on the request so Next.js can pick up the nonce during
+  // rendering, and send it on the response so the browser enforces it.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", csp);
+  const next = () => {
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("Content-Security-Policy", csp);
+    // Trusted Types are reported, not enforced, until verified: React's
+    // dangerouslySetInnerHTML and some libraries assign innerHTML directly.
+    response.headers.set(
+      "Content-Security-Policy-Report-Only",
+      "require-trusted-types-for 'script'"
+    );
+    return response;
+  };
 
   // Check configuration state first
   if (!configValidationResult.valid) {
@@ -35,7 +98,7 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/static') || 
         pathname === '/favicon.ico' || 
         pathname === '/robots.txt') {
-      return NextResponse.next();
+      return next();
     }
     
     // Either return error for API routes or redirect to an error page
@@ -83,7 +146,7 @@ export async function middleware(request: NextRequest) {
 
   // Attach user data to the request headers for client components
   if (isAuthenticated && user) {
-    const response = NextResponse.next();
+    const response = next();
     // Set the header as you're doing
     response.headers.set("x-user-data", JSON.stringify(user));
     
@@ -97,7 +160,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  return NextResponse.next();
+  return next();
 }
 
 // Keep your existing matcher configuration

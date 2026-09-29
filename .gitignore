@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Legacy build/backup scripts (superseded by build-production.ps1 / generate_production_build_for_ubuntu.sh)
+legacy-scripts/

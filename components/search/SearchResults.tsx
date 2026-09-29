@@ -2,12 +2,14 @@ import { SearchDocument } from "@/lib/types/search.types";
 import { SearchResult } from "./SearchResult";
 import Chatbot from "@/components/chat/Chatbot";
 import { useState } from "react";
-import { SearchX } from "lucide-react";
+import { Search, SearchX } from "lucide-react";
 
 interface SearchResultsProps {
   results: SearchDocument[];
   allResults: SearchDocument[];
   isLoading: boolean;
+  /** False until the user runs a search — shows a prompt instead of "No documents found". */
+  hasSearched?: boolean;
   showExtras?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
@@ -17,6 +19,7 @@ export function SearchResults({
   results,
   allResults,
   isLoading,
+  hasSearched = true,
   showExtras = true,
   selectedIds,
   onToggleSelect,
@@ -40,6 +43,22 @@ export function SearchResults({
           <span className="block mt-1.5 text-[0.78rem] text-muted-foreground">
             The animated loader is designed to be informative, calm and unmistakably in progress.
           </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!results.length && !hasSearched) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-6 text-center rounded-2xl border border-dashed border-border bg-white">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-peacock-soft">
+          <Search className="w-6 h-6 text-peacock-deep" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">Start your search</p>
+          <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+            Enter a search term above, or pick a sample or recent search, to see matching documents.
+          </p>
         </div>
       </div>
     );
